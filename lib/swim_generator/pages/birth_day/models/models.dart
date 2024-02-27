@@ -1,0 +1,1 @@
+export 'birth_day_model.dart';

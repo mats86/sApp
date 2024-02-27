@@ -1,0 +1,1 @@
+export 'kind_personal_info_page.dart';
