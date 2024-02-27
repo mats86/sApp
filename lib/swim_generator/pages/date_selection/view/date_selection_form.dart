@@ -7,6 +7,7 @@ import 'package:formz/formz.dart';
 import 'package:intl/intl.dart';
 import 'package:swim_generator_app/swim_generator/cubit/swim_generator_cubit.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
+import 'package:day_night_time_picker/day_night_time_picker.dart';
 
 import '../../../models/date_selection.dart';
 import '../bloc/date_selection_bloc.dart';
@@ -354,13 +355,13 @@ class BirthDataInputMulti extends StatefulWidget {
   });
 
   @override
-  _MyCustomDialogState createState() => _MyCustomDialogState();
+  State<BirthDataInputMulti> createState() => _BirthDataInputMulti();
 }
-class _BirthDataInputMulti extends State<MyCustomDialog> {
+
+class _BirthDataInputMulti extends State<BirthDataInputMulti> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DateSelectionBloc, DateSelectionState>(
-      //buildWhen: (previous, current) => previous.birthDay != current.birthDay,
       builder: (context, state) {
         return Visibility(
           visible: (state.flexFixDate &&
@@ -380,62 +381,89 @@ class _BirthDataInputMulti extends State<MyCustomDialog> {
                   2,
           child: ElevatedButton(
             key: const Key('personalInfoForm_birthDayInput_textField'),
-            //controller: controller,
+            style: ElevatedButton.styleFrom(
+                elevation: 0, backgroundColor: Colors.lightBlueAccent),
             onPressed: () async {
-              // Starten Sie den Dialog und warten Sie auf das Ergebnis
               final List<DateTime>? selectedDates =
                   await showDialog<List<DateTime>>(
                 context: context,
                 builder: (BuildContext context) {
-                  // Initialisieren Sie eine temporäre Liste für ausgewählte Daten innerhalb des Dialogs
                   List<DateTime> tempSelectedDates = [];
+                  bool showError = false; // Zustandsvariable für Fehlermeldung
                   return StatefulBuilder(
                     builder: (context, setState) {
+                      // Funktion zum Einreichen der Auswahl
+                      void submitSelection() {
+                        tempSelectedDates.sort((a, b) => a.compareTo(b));
+                        if (tempSelectedDates.length == 3 &&
+                            tempSelectedDates[2]
+                                    .difference(tempSelectedDates[0])
+                                    .inDays <=
+                                5) {
+                          Navigator.of(context).pop(tempSelectedDates);
+                        } else {
+                          setState(() {
+                            showError =
+                                true; // Setzen des Fehlers, um die Nachricht anzuzeigen
+                          });
+                        }
+                      }
+
                       return AlertDialog(
-                        title: const Text('Wählen Sie bis zu 3 Tage'),
-                        content: SizedBox(
-                          height: 300,
-                          width: 300,
-                          child: SfDateRangePicker(
-                            showActionButtons: true,
-                            cancelText: 'Abbrechen',
-                            onSubmit: (Object? value) {
-                              if (value is List<DateTime> &&
-                                  value.length == 3) {
-                                // Nur fortfahren, wenn genau 3 Tage ausgewählt sind
-                                tempSelectedDates = value;
-                                tempSelectedDates
-                                    .sort((a, b) => a.compareTo(b));
-
-                                // Zuweisung der ausgewählten Daten zu den Textfeldern
-                                dateController1.text = DateFormat('dd.MM.yyyy')
-                                    .format(tempSelectedDates[0]);
-                                dateController2.text = DateFormat('dd.MM.yyyy')
-                                    .format(tempSelectedDates[1]);
-                                dateController3.text = DateFormat('dd.MM.yyyy')
-                                    .format(tempSelectedDates[2]);
-
-                                Navigator.of(context).pop(); // Dialog schließen
-                                setState(() {});
-                              } else {
-                                // Anzeigen einer Benachrichtigung oder Aktualisierung des UI, um den Benutzer zu informieren
-                              }
-                            },
-                            onCancel: () => Navigator.of(context).pop(),
-                            selectionMode:
-                                DateRangePickerSelectionMode.multiple,
-                            initialSelectedDate: DateTime.now(),
-                            enablePastDates: false,
-                          ),
+                        title: const Text('Wähle 3 Termine'),
+                        content: Column(
+                          mainAxisSize: MainAxisSize
+                              .min, // Verhindert, dass der Inhalt zu groß wird
+                          children: [
+                            SizedBox(
+                              height: 300,
+                              width: 300,
+                              child: SfDateRangePicker(
+                                showActionButtons: false,
+                                cancelText: 'Abbrechen',
+                                onSelectionChanged:
+                                    (DateRangePickerSelectionChangedArgs args) {
+                                  if (args.value is List<DateTime>) {
+                                    List<DateTime> selectedList = args.value;
+                                    if (selectedList.length <= 3 ||
+                                        selectedList.length > 3) {
+                                      tempSelectedDates = selectedList;
+                                      setState(() {
+                                        showError =
+                                            false; // Fehler zurücksetzen, wenn die Auswahl gültig ist
+                                      });
+                                    }
+                                  }
+                                },
+                                selectionMode:
+                                    DateRangePickerSelectionMode.multiple,
+                                initialSelectedDate: DateTime.now(),
+                                enablePastDates: false,
+                              ),
+                            ),
+                            if (showError) // Anzeigen der Fehlermeldung, wenn showError true ist
+                              const Padding(
+                                padding: EdgeInsets.only(top: 8.0),
+                                child: Text(
+                                  'Alle ausgewählten Tage müssen innerhalb\n von 6 Tagen liegen.',
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                              ),
+                          ],
                         ),
                         actions: <Widget>[
                           TextButton(
-                            child: Text('Abbrechen'),
+                            child: const Text('Abbrechen'),
                             onPressed: () => Navigator.of(context).pop(),
                           ),
-                          TextButton(
-                            child: Text('OK'),
-                            onPressed: selectedDates.length == 3 ? () => _submitSelection() : null,
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                backgroundColor: Colors.lightBlueAccent),
+                            onPressed: tempSelectedDates.length == 3
+                                ? submitSelection
+                                : null,
+                            child: const Text('OK'),
                           ),
                         ],
                       );
@@ -443,14 +471,34 @@ class _BirthDataInputMulti extends State<MyCustomDialog> {
                   );
                 },
               );
+
+              if (selectedDates != null && selectedDates.length == 3) {
+                widget.dateController1.text =
+                    DateFormat('dd.MM.yyyy').format(selectedDates[0]);
+                widget.dateController2.text =
+                    DateFormat('dd.MM.yyyy').format(selectedDates[1]);
+                widget.dateController3.text =
+                    DateFormat('dd.MM.yyyy').format(selectedDates[2]);
+                setState(
+                    () {}); // Erzwingen Sie ein Update der Benutzeroberfläche, falls erforderlich
+              }
             },
-            child: Text(''),
+            child: const Row(
+              mainAxisSize:
+                  MainAxisSize.min, // Verhindert, dass die Row zu breit wird
+              children: [
+                Text('Geburtstage wählen'),
+                SizedBox(width: 12.0),
+                Icon(Icons.calendar_month_sharp, size: 20),
+                // Kalender-Icon
+                // Fügt einen Abstand zwischen Icon und Text hinzu// Der Text des Buttons
+              ],
+            ),
           ),
         );
       },
     );
   }
-
 }
 
 class DesiredDateTimeInput extends StatelessWidget {
@@ -588,34 +636,39 @@ class DesiredDateTimeInput extends StatelessWidget {
   }
 
   Future<void> _selectTime(BuildContext context) async {
-    final TimeOfDay? pickedTime = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-      builder: (BuildContext context, Widget? child) {
-        return MediaQuery(
-          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-          child: child!,
-        );
-      },
+    Time time = Time(hour: 11, minute: 00, second: 00);
+    Navigator.of(context)
+        .push(
+      showPicker(
+        context: context,
+        value: time,
+        onChange: (TimeOfDay newTime) {
+          // Konvertieren Sie die Stunden und Minuten in Strings
+          String formattedHour = newTime.hour
+              .toString()
+              .padLeft(2, '0'); // Fügt eine führende Null hinzu, wenn nötig
+          String formattedMinute = newTime.minute
+              .toString()
+              .padLeft(2, '0'); // Fügt eine führende Null hinzu, wenn nötig
+
+          // Kombinieren der formatierten Stunden und Minuten zu einem HH:MM-Format
+          String formattedTime = "$formattedHour:$formattedMinute";
+
+          // Setzen des formatierten Strings im TextController
+          timeController.text = formattedTime;
+        },
+        is24HrFormat: true,
+        sunrise: const TimeOfDay(hour: 6, minute: 0),
+        sunset: const TimeOfDay(hour: 18, minute: 0),
+        displayHeader: false,
+        minuteInterval: TimePickerInterval.THIRTY,
+        minHour: 09,
+        maxHour: 18,
+        minMinute: 00,
+        maxMinute: 30,
+        height: 250,
+      ),
     );
-
-    if (pickedTime != null) {
-      // Runden der Minuten auf den nächsten 30-Minuten-Takt
-      final int roundedMinute = ((pickedTime.minute + 15) ~/ 30 * 30) % 60;
-      final int additionalHour = ((pickedTime.minute + 15) ~/ 30 * 30) ~/ 60;
-      final TimeOfDay adjustedTime = TimeOfDay(
-          hour: (pickedTime.hour + additionalHour) % 24, minute: roundedMinute);
-
-      final DateTime? existingDate = _getDateFromController();
-      if (existingDate != null) {
-        // Verwenden Sie `adjustedTime` statt `pickedTime`
-        onDateTimeSelected(existingDate, adjustedTime);
-      }
-
-      // Formatieren und setzen des Textes mit der angepassten Zeit
-      var formattedTime = _formatTimeOfDay(adjustedTime);
-      timeController.text = formattedTime;
-    }
   }
 
   String _formatTimeOfDay(TimeOfDay time) {

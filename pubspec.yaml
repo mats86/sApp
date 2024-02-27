@@ -51,6 +51,7 @@ dependencies:
   flutter_linkify: ^6.0.0
   syncfusion_flutter_datagrid: ^24.2.6
   syncfusion_flutter_datepicker: ^24.2.6
+  day_night_time_picker: ^1.3.0+1
   #  user_repository:
 #    git: https://github.com/mats86/user_repository.git
   flutter:
