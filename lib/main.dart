@@ -16,7 +16,7 @@ void main() {
   setPathUrlStrategy(); // Setzt die URL-Strategie auf Path-basiert um
   // final HttpLink httpLink = HttpLink('https://localhost:7188/graphql');
   final HttpLink httpLink = HttpLink(
-      'https://backend.elated-morse.212-227-206-78.plesk.page:5051/graphql');
+      'https://backend.happy-gagarin.194-164-56-243.plesk.page:5051/graphql');
 
   final ValueNotifier<GraphQLClient> client = ValueNotifier(
     GraphQLClient(

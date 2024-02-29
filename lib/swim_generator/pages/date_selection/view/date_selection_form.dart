@@ -487,7 +487,7 @@ class _BirthDataInputMulti extends State<BirthDataInputMulti> {
               mainAxisSize:
                   MainAxisSize.min, // Verhindert, dass die Row zu breit wird
               children: [
-                Text('Geburtstage wählen'),
+                Text('Wunschtermine wählen'),
                 SizedBox(width: 12.0),
                 Icon(Icons.calendar_month_sharp, size: 20),
                 // Kalender-Icon
