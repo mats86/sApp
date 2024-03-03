@@ -23,20 +23,31 @@ class _KindPersonalInfoForm extends State<KindPersonalInfoForm> {
   @override
   void initState() {
     super.initState();
-    _firstNameController.text =
-        context.read<SwimGeneratorCubit>().state.kindPersonalInfo.firstName;
-    _lastNameController.text =
-        context.read<SwimGeneratorCubit>().state.kindPersonalInfo.lastName;
-    if (context.read<SwimGeneratorCubit>().state.kindPersonalInfo.firstName !=
-        '') {
-      context.read<KindPersonalInfoBloc>().add(FirstNameChanged(
-          context.read<SwimGeneratorCubit>().state.kindPersonalInfo.firstName));
-    }
-    if (context.read<SwimGeneratorCubit>().state.kindPersonalInfo.lastName !=
-        '') {
-      context.read<KindPersonalInfoBloc>().add(LastNameChanged(
-          context.read<SwimGeneratorCubit>().state.kindPersonalInfo.lastName));
-    }
+    context.read<KindPersonalInfoBloc>().add(UpdateChildInfoIndex());
+    // _firstNameController.text =
+    //     context.read<SwimGeneratorCubit>().state.kindPersonalInfo.firstName;
+    // _lastNameController.text =
+    //     context.read<SwimGeneratorCubit>().state.kindPersonalInfo.lastName;
+    // if (context.read<SwimGeneratorCubit>().state.kindPersonalInfo.firstName !=
+    //     '') {
+    //   context.read<KindPersonalInfoBloc>().add(FirstNameChanged(
+    //       index: 0,
+    //       firstName: context
+    //           .read<SwimGeneratorCubit>()
+    //           .state
+    //           .kindPersonalInfo
+    //           .firstName));
+    // }
+    // if (context.read<SwimGeneratorCubit>().state.kindPersonalInfo.lastName !=
+    //     '') {
+    //   context.read<KindPersonalInfoBloc>().add(LastNameChanged(
+    //       index: 0,
+    //       lastName: context
+    //           .read<SwimGeneratorCubit>()
+    //           .state
+    //           .kindPersonalInfo
+    //           .lastName));
+    // }
 
     _firstNameFocusNod.addListener(() {
       if (!_firstNameFocusNod.hasFocus) {
@@ -107,7 +118,7 @@ class _KindPersonalInfoForm extends State<KindPersonalInfoForm> {
                 ],
               ),
               overflow:
-              TextOverflow.visible, // Einstellung für den Textüberlauf
+                  TextOverflow.visible, // Einstellung für den Textüberlauf
             ),
           ),
           Card(
@@ -120,28 +131,31 @@ class _KindPersonalInfoForm extends State<KindPersonalInfoForm> {
                   _buildCheckboxRow(
                     context,
                     'Körperliche Entwicklungsverzögerungen',
-                        (state) => state.isPhysicalDelay.value,
-                        (val) => context
+                    (state) => state
+                        .childInfos[state.childInfoIndex].isPhysicalDelay.value,
+                    (val) => context
                         .read<KindPersonalInfoBloc>()
-                        .add(PhysicalDelayChanged(val!)),
+                        .add(PhysicalDelayChanged(index: 0, isChecked: val!)),
                   ),
                   const Divider(),
                   _buildCheckboxRow(
                     context,
                     'Geistige Entwicklungsverzögerungen',
-                        (state) => state.isMentalDelay.value,
-                        (val) => context
+                    (state) => state
+                        .childInfos[state.childInfoIndex].isMentalDelay.value,
+                    (val) => context
                         .read<KindPersonalInfoBloc>()
-                        .add(MentalDelayChanged(val!)),
+                        .add(MentalDelayChanged(index: 0, isChecked: val!)),
                   ),
                   const Divider(),
                   _buildCheckboxRow(
                     context,
                     'Keine Einschränkungen',
-                        (state) => state.isNoLimit.value,
-                        (val) => context
+                    (state) =>
+                        state.childInfos[state.childInfoIndex].isNoLimit.value,
+                    (val) => context
                         .read<KindPersonalInfoBloc>()
-                        .add(NoLimitsChanged(val!)),
+                        .add(NoLimitsChanged(index: 0, isChecked: val!)),
                   ),
                 ],
               ),
@@ -166,11 +180,11 @@ class _KindPersonalInfoForm extends State<KindPersonalInfoForm> {
   }
 
   Widget _buildCheckboxRow(
-      BuildContext context,
-      String label,
-      bool Function(KindPersonalInfoState) valueGetter,
-      Function(bool?) onChanged,
-      ) {
+    BuildContext context,
+    String label,
+    bool Function(KindPersonalInfoState) valueGetter,
+    Function(bool?) onChanged,
+  ) {
     return Row(
       children: <Widget>[
         BlocBuilder<KindPersonalInfoBloc, KindPersonalInfoState>(
@@ -205,7 +219,15 @@ class _FirstNameInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<KindPersonalInfoBloc, KindPersonalInfoState>(
-      buildWhen: (previous, current) => previous.firstName != current.firstName,
+      buildWhen: (previous, current) =>
+          previous
+              .childInfos[
+                  context.read<KindPersonalInfoBloc>().state.childInfoIndex]
+              .firstName !=
+          current
+              .childInfos[
+                  context.read<KindPersonalInfoBloc>().state.childInfoIndex]
+              .firstName,
       builder: (context, state) {
         return TextField(
           controller: controller,
@@ -213,7 +235,7 @@ class _FirstNameInput extends StatelessWidget {
           key: const Key('KindPersonalInfoForm_firstNameInput_textField'),
           onChanged: (firstName) => context
               .read<KindPersonalInfoBloc>()
-              .add(FirstNameChanged(firstName)),
+              .add(FirstNameChanged(index: 0, firstName: firstName)),
           decoration: InputDecoration(
             label: const FittedBox(
               fit: BoxFit.fitWidth,
@@ -230,9 +252,12 @@ class _FirstNameInput extends StatelessWidget {
                 ],
               ),
             ),
-            errorText: state.firstName.displayError != null
-                ? state.firstName.error?.message
-                : null,
+            errorText:
+                state.childInfos[state.childInfoIndex].firstName.displayError !=
+                        null
+                    ? state.childInfos[state.childInfoIndex].firstName.error
+                        ?.message
+                    : null,
           ),
         );
       },
@@ -252,14 +277,22 @@ class _LastNameInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<KindPersonalInfoBloc, KindPersonalInfoState>(
-        buildWhen: (previous, current) => previous.lastName != current.lastName,
+        buildWhen: (previous, current) =>
+            previous
+                .childInfos[
+                    context.read<KindPersonalInfoBloc>().state.childInfoIndex]
+                .lastName !=
+            current
+                .childInfos[
+                    context.read<KindPersonalInfoBloc>().state.childInfoIndex]
+                .lastName,
         builder: (context, state) {
           return TextField(
             focusNode: focusNode,
             key: const Key('KindPersonalInfoForm_lastNameInput_textField'),
             onChanged: (lastName) => context
                 .read<KindPersonalInfoBloc>()
-                .add(LastNameChanged(lastName)),
+                .add(LastNameChanged(index: 0, lastName: lastName)),
             decoration: InputDecoration(
               label: const FittedBox(
                 fit: BoxFit.fitWidth,
@@ -277,8 +310,11 @@ class _LastNameInput extends StatelessWidget {
                   ],
                 ),
               ),
-              errorText: state.lastName.displayError != null
-                  ? state.lastName.error?.message
+              errorText: state.childInfos[state.childInfoIndex].lastName
+                          .displayError !=
+                      null
+                  ? state
+                      .childInfos[state.childInfoIndex].lastName.error?.message
                   : null,
             ),
             controller: controller,
@@ -328,48 +364,56 @@ class _SubmitButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocConsumer<KindPersonalInfoBloc, KindPersonalInfoState>(
       listenWhen: (previous, current) =>
-      previous.submissionStatus != current.submissionStatus,
+          previous.submissionStatus != current.submissionStatus,
       listener: (context, state) {
         if (state.submissionStatus.isSuccess) {
+          context.read<KindPersonalInfoBloc>().add(UpdateChildInfoIndex());
           context.read<SwimGeneratorCubit>().stepContinued();
+          List<KindPersonalInfo> kindPersonalInfos =
+              List<KindPersonalInfo>.from(
+                  context.read<SwimGeneratorCubit>().state.kindPersonalInfos);
+          kindPersonalInfos.add(KindPersonalInfo(
+            firstName:
+                state.childInfos[state.childInfoIndex].firstName.value.trim(),
+            lastName:
+                state.childInfos[state.childInfoIndex].lastName.value.trim(),
+            kidsDevelopState:
+                state.childInfos[state.childInfoIndex].kidsDevelopState,
+          ));
           context
               .read<SwimGeneratorCubit>()
-              .updateKindPersonalInfo(KindPersonalInfo(
-            firstName: state.firstName.value.trim(),
-            lastName: state.lastName.value.trim(),
-            kidsDevelopState: state.kidsDevelopState,
-          ));
+              .updateKindPersonalInfo(kindPersonalInfos);
         }
       },
       buildWhen: (previous, current) =>
-      previous.submissionStatus != current.submissionStatus,
+          previous.submissionStatus != current.submissionStatus,
       builder: (context, state) {
         final isValid =
-        context.select((KindPersonalInfoBloc bloc) => bloc.state.isValid);
+            context.select((KindPersonalInfoBloc bloc) => bloc.state.isValid);
         return state.submissionStatus.isInProgress
             ? const SpinKitWaveSpinner(
-          color: Colors.lightBlueAccent,
-          size: 50.0,
-        )
+                color: Colors.lightBlueAccent,
+                size: 50.0,
+              )
             : ElevatedButton(
-          key: const Key(
-              'kindPersonalInfoForm_submitButton_elevatedButton'),
-          style: ElevatedButton.styleFrom(
-              elevation: 0, backgroundColor: Colors.lightBlueAccent),
-          onPressed: isValid
-              ? () => context
-              .read<KindPersonalInfoBloc>()
-              .add(FormSubmitted())
-              : null,
-          child: const Text(
-            'Weiter',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        );
+                key: const Key(
+                    'kindPersonalInfoForm_submitButton_elevatedButton'),
+                style: ElevatedButton.styleFrom(
+                    elevation: 0, backgroundColor: Colors.lightBlueAccent),
+                onPressed: isValid
+                    ? () => context
+                        .read<KindPersonalInfoBloc>()
+                        .add(FormSubmitted())
+                    : null,
+                child: const Text(
+                  'Weiter',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              );
       },
     );
   }
@@ -380,17 +424,17 @@ class _BackButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<KindPersonalInfoBloc, KindPersonalInfoState>(
         buildWhen: (previous, current) =>
-        previous.submissionStatus != current.submissionStatus,
+            previous.submissionStatus != current.submissionStatus,
         builder: (context, state) {
           return state.submissionStatus.isInProgress
               ? const SizedBox.shrink()
               : TextButton(
-            key: const Key(
-                'kindPersonalInfoForm_cancelButton_elevatedButton'),
-            onPressed: () =>
-                context.read<SwimGeneratorCubit>().stepCancelled(),
-            child: const Text('Zurück'),
-          );
+                  key: const Key(
+                      'kindPersonalInfoForm_cancelButton_elevatedButton'),
+                  onPressed: () =>
+                      context.read<SwimGeneratorCubit>().stepCancelled(),
+                  child: const Text('Zurück'),
+                );
         });
   }
 }

@@ -28,16 +28,14 @@ class SwimGeneratorStepper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.read<SwimGeneratorCubit>().updateStepPages(order);
+    context.read<SwimGeneratorCubit>().updateStepperLength(order.length);
+    context.read<SwimGeneratorCubit>().updateNumberStepper(order.length);
     return BlocBuilder<SwimGeneratorCubit, SwimGeneratorState>(
       builder: (context, state) {
-        List<int> generateStepNumbers(int length, bool isAdultCourse) {
-          List<int> steps = List.generate(length, (index) => index + 1);
-          if (isAdultCourse) {
-            steps.removeLast();
-          }
-          return steps;
-        }
-
+        context.read<SwimGeneratorCubit>().updateStepPages(state.stepPages);
+        context.read<SwimGeneratorCubit>().updateStepperLength(state.stepPages.length);
+        context.read<SwimGeneratorCubit>().updateNumberStepper(state.stepPages.length);
         return SwimGeneratorFormShell(
           child: Column(
             children: [
@@ -45,7 +43,7 @@ class SwimGeneratorStepper extends StatelessWidget {
                 enableNextPreviousButtons: false,
                 enableStepTapping: false,
                 activeStepColor: Colors.lightBlueAccent,
-                numbers: generateStepNumbers(order.length, state.isAdultCourse),
+                numbers: state.numberStepper,
                 activeStep: state.activeStepperIndex,
                 onStepReached: (index) {
                   context.read<SwimGeneratorCubit>().stepTapped(index);
@@ -53,14 +51,16 @@ class SwimGeneratorStepper extends StatelessWidget {
               ),
               header(
                 state.activeStepperIndex,
+                state.stepPages.isEmpty ? order : state.stepPages,
                 context.read<SwimGeneratorCubit>().state.configApp.isBooking,
-                state.isAdultCourse,
+                state.swimCourseInfo.swimCourse.isAdultCourse,
               ),
               body(
                 state.activeStepperIndex,
+                state.stepPages.isEmpty ? order : state.stepPages,
                 swimCourseID,
                 isDirectLinks,
-                state.isAdultCourse,
+                state.swimCourseInfo.swimCourse.isAdultCourse,
                 schoolInfo,
               ),
             ],
@@ -72,10 +72,11 @@ class SwimGeneratorStepper extends StatelessWidget {
 
   /// Returns the header wrapping the header text.
   Widget header(
-      int activeStepperIndex,
-      bool isBooking,
-      bool isAdultCourse,
-      ) {
+    int activeStepperIndex,
+    List<int> stepPages,
+    bool isBooking,
+    bool isAdultCourse,
+  ) {
     return Container(
       decoration: BoxDecoration(
         // color: Colors.orange,
@@ -86,6 +87,7 @@ class SwimGeneratorStepper extends StatelessWidget {
         child: Text(
           headerText(
             activeStepperIndex,
+            stepPages,
             isDirectLinks,
             isBooking,
             isAdultCourse,
@@ -101,12 +103,13 @@ class SwimGeneratorStepper extends StatelessWidget {
 
   // Returns the header text based on the activeStep.
   String headerText(
-      int activeStepperIndex,
-      bool isDirectLinks,
-      bool isBooking,
-      bool isAdultCourse,
-      ) {
-    int pageIndex = order[activeStepperIndex];
+    int activeStepperIndex,
+    List<int> stepPages,
+    bool isDirectLinks,
+    bool isBooking,
+    bool isAdultCourse,
+  ) {
+    int pageIndex = stepPages[activeStepperIndex];
 
     switch (pageIndex) {
       case 0:
@@ -155,13 +158,14 @@ class SwimGeneratorStepper extends StatelessWidget {
 
   /// Returns the body.
   Widget body(
-      int activeStepperIndex,
-      int swimCourseID,
-      bool isDirectLinks,
-      bool isAdultCourse,
-      SchoolInfo schoolInfo,
-      ) {
-    int pageIndex = order[activeStepperIndex];
+    int activeStepperIndex,
+    List<int> stepPages,
+    int swimCourseID,
+    bool isDirectLinks,
+    bool isAdultCourse,
+    SchoolInfo schoolInfo,
+  ) {
+    int pageIndex = stepPages[activeStepperIndex];
 
     switch (pageIndex) {
       case 0:

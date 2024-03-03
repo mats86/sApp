@@ -11,8 +11,7 @@ import '../pages/swim_season/models/swim_season.dart';
 part 'swim_generator_state.dart';
 
 class SwimGeneratorCubit extends Cubit<SwimGeneratorState> {
-  SwimGeneratorCubit(this.stepperLength) : super(const SwimGeneratorState());
-  final int stepperLength;
+  SwimGeneratorCubit() : super(const SwimGeneratorState());
 
   void stepTapped(int tappedIndex) {
     emit(SwimGeneratorState(
@@ -20,16 +19,13 @@ class SwimGeneratorCubit extends Cubit<SwimGeneratorState> {
     ));
   }
 
-  void stepContinued({bool isAdultCourse = false}) {
-    if (state.activeStepperIndex < stepperLength - 1) {
+  void stepContinued() {
+    if (state.activeStepperIndex < state.stepperLength - 1) {
       emit(
         state.copyWith(
           activeStepperIndex: state.activeStepperIndex + 1,
         ),
       );
-      if (isAdultCourse) {
-        emit(state.copyWith(isAdultCourse: isAdultCourse));
-      }
     }
   }
 
@@ -41,11 +37,43 @@ class SwimGeneratorCubit extends Cubit<SwimGeneratorState> {
     }
   }
 
+  void updateStepperLength(int stepperLength) {
+    emit(state.copyWith(stepperLength: stepperLength));
+  }
+
+  void updateNumberStepper(int length, {int addStep = 0}) {
+    List<int> steps = List.generate(length, (index) => index + 1);
+    emit(state.copyWith(numberStepper: steps));
+  }
+
+  void removeLastStep() {
+    List<int> steps = List<int>.from(state.numberStepper);
+    if (steps.isNotEmpty) {
+      steps.removeLast();
+    }
+    emit(state.copyWith(numberStepper: steps));
+  }
+
+  void updateStepPages(List<int> stepPages) {
+    emit(state.copyWith(stepPages: stepPages));
+  }
+
+  void updateAddStepPages(int addStep) {
+    List<int> stepPages = state.stepPages;
+    int index = state.stepPages.indexOf(6);
+    if (index != -1) {
+      for (int i = 0; i < addStep - 1; i++) {
+        stepPages.insert(index + 1, 6);
+      }
+    }
+    emit(state.copyWith(stepPages: stepPages));
+  }
+
   void updateSwimLevel(SwimLevelEnum? swimLevel) {
     emit(state.copyWith(
         swimLevel: state.swimLevel.copyWith(
-          swimLevel: swimLevel,
-        )));
+      swimLevel: swimLevel,
+    )));
   }
 
   void updateSwimSeasonInfo(SwimSeason? swimSeason) {
@@ -69,8 +97,8 @@ class SwimGeneratorCubit extends Cubit<SwimGeneratorState> {
     emit(state.copyWith(dateSelection: dateSelection));
   }
 
-  void updateKindPersonalInfo(KindPersonalInfo? kindPersonalInfo) {
-    emit(state.copyWith(kindPersonalInfo: kindPersonalInfo));
+  void updateKindPersonalInfo(List<KindPersonalInfo>? kindPersonalInfos) {
+    emit(state.copyWith(kindPersonalInfos: kindPersonalInfos));
   }
 
   void updatePersonalInfo(PersonalInfo? personalInfo) {
@@ -93,7 +121,7 @@ class SwimGeneratorCubit extends Cubit<SwimGeneratorState> {
           isDirectLinks: isDirectLinks ?? state.configApp.isDirectLinks,
           isEmailExists: isEmailExists ?? state.configApp.isEmailExists,
           referenceBooking:
-          referenceBooking ?? state.configApp.referenceBooking,
+              referenceBooking ?? state.configApp.referenceBooking,
           schoolInfo: schoolInfo ?? state.configApp.schoolInfo,
         ),
       ),

@@ -182,7 +182,6 @@ class _SwimCourseRadioButton extends StatelessWidget {
                                         showDialog(
                                           context: context,
                                           builder: (BuildContext context) {
-                                            print('Obbb');
                                             print(state.swimCourseOptions[index].swimCourseUrl);
                                             return AlertDialog(
                                               title: Text(state
@@ -257,12 +256,15 @@ class _SubmitButton extends StatelessWidget {
         if (state.submissionStatus.isSuccess) {
           context
               .read<SwimGeneratorCubit>()
-              .stepContinued(isAdultCourse: state.selectedCourse.isAdultCourse);
+              .stepContinued();
           SwimCourseInfo swimCourseInfo = SwimCourseInfo(
               season: state.swimSeason.value, swimCourse: state.selectedCourse);
           context
               .read<SwimGeneratorCubit>()
               .updateSwimCourseInfo(swimCourseInfo);
+          if (swimCourseInfo.swimCourse.isGroupCourse) {
+            context.read<SwimGeneratorCubit>().updateAddStepPages(3);
+          }
           DateTime now = DateTime.now();
           int year = now.year;
           context.read<SwimGeneratorCubit>().updateConfigApp(

@@ -27,7 +27,7 @@ class SwimGeneratorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<SwimGeneratorCubit>(
-      create: (_) => SwimGeneratorCubit(order.length),
+      create: (_) => SwimGeneratorCubit(),
       child: SwimGeneratorStepper(
         graphQLClient: graphQLClient,
         order: order,

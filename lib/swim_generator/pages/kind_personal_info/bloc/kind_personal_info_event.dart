@@ -7,48 +7,57 @@ abstract class KindPersonalInfoEvent extends Equatable {
   List<Object> get props => [];
 }
 
+class UpdateChildInfoIndex extends KindPersonalInfoEvent {}
+
 class FirstNameChanged extends KindPersonalInfoEvent {
   final String firstName;
-  const FirstNameChanged(this.firstName);
+  final int index;
+
+  const FirstNameChanged({required this.index, required this.firstName});
 
   @override
-  List<Object> get props => [firstName];
+  List<Object> get props => [index, firstName];
 }
+
 
 final class FirstNameUnfocused extends KindPersonalInfoEvent {}
 
 class LastNameChanged extends KindPersonalInfoEvent {
   final String lastName;
-  const LastNameChanged(this.lastName);
+  final int index;
+  const LastNameChanged({required this.index, required this.lastName});
 
   @override
-  List<Object> get props => [lastName];
+  List<Object> get props => [index, lastName];
 }
 
 final class LastNameUnfocused extends KindPersonalInfoEvent {}
 
 class PhysicalDelayChanged extends KindPersonalInfoEvent {
   final bool isChecked;
-  const PhysicalDelayChanged(this.isChecked);
+  final int index;
+  const PhysicalDelayChanged({required this.index, required this.isChecked});
 
   @override
-  List<Object> get props => [isChecked];
+  List<Object> get props => [index, isChecked];
 }
 
 class MentalDelayChanged extends KindPersonalInfoEvent {
   final bool isChecked;
-  const MentalDelayChanged(this.isChecked);
+  final int index;
+  const MentalDelayChanged({required this.index, required this.isChecked});
 
   @override
-  List<Object> get props => [isChecked];
+  List<Object> get props => [index, isChecked];
 }
 
 class NoLimitsChanged extends KindPersonalInfoEvent {
   final bool isChecked;
-  const NoLimitsChanged(this.isChecked);
+  final int index;
+  const NoLimitsChanged({required this.index, required this.isChecked});
 
   @override
-  List<Object> get props => [isChecked];
+  List<Object> get props => [index, isChecked];
 }
 
 class FormSubmitted extends KindPersonalInfoEvent {}
