@@ -13,6 +13,7 @@ class PersonalInfo extends Equatable {
     required this.emailConfirm,
     required this.phoneNumber,
     required this.phoneNumberConfirm,
+    required this.whatsappNumber,
   });
 
   final String parentTitle;
@@ -26,6 +27,7 @@ class PersonalInfo extends Equatable {
   final String emailConfirm;
   final String phoneNumber;
   final String phoneNumberConfirm;
+  final String whatsappNumber;
 
   bool get isEmpty {
     return parentTitle.isEmpty &&
@@ -38,7 +40,8 @@ class PersonalInfo extends Equatable {
         email.isEmpty &&
         emailConfirm.isEmpty &&
         phoneNumber.isEmpty &&
-        phoneNumber.isEmpty;
+        phoneNumber.isEmpty &&
+        whatsappNumber.isEmpty;
   }
 
   bool get isNotEmpty {
@@ -47,18 +50,19 @@ class PersonalInfo extends Equatable {
 
   const PersonalInfo.empty()
       : this(
-    parentTitle: '',
-    firstName: '',
-    lastName: '',
-    parentStreet: '',
-    streetNumber: '',
-    zipCode: '',
-    city: '',
-    email: '',
-    emailConfirm: '',
-    phoneNumber: '',
-    phoneNumberConfirm: '',
-  );
+          parentTitle: '',
+          firstName: '',
+          lastName: '',
+          parentStreet: '',
+          streetNumber: '',
+          zipCode: '',
+          city: '',
+          email: '',
+          emailConfirm: '',
+          phoneNumber: '',
+          phoneNumberConfirm: '',
+          whatsappNumber: '',
+        );
 
   PersonalInfo copyWith({
     String? parentTitle,
@@ -72,6 +76,7 @@ class PersonalInfo extends Equatable {
     String? emailConfirm,
     String? phoneNumber,
     String? phoneNumberConfirm,
+    String? whatsappNumber,
   }) {
     return PersonalInfo(
       parentTitle: parentTitle ?? this.parentTitle,
@@ -85,21 +90,23 @@ class PersonalInfo extends Equatable {
       emailConfirm: emailConfirm ?? this.emailConfirm,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       phoneNumberConfirm: phoneNumberConfirm ?? this.phoneNumberConfirm,
+      whatsappNumber: whatsappNumber ?? this.whatsappNumber,
     );
   }
 
   @override
   List<Object?> get props => [
-    parentTitle,
-    firstName,
-    lastName,
-    parentStreet,
-    streetNumber,
-    zipCode,
-    city,
-    email,
-    emailConfirm,
-    phoneNumber,
-    phoneNumberConfirm,
-  ];
+        parentTitle,
+        firstName,
+        lastName,
+        parentStreet,
+        streetNumber,
+        zipCode,
+        city,
+        email,
+        emailConfirm,
+        phoneNumber,
+        phoneNumberConfirm,
+        whatsappNumber,
+      ];
 }

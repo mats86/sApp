@@ -6,13 +6,18 @@ class SwimGeneratorState extends Equatable {
     this.activeStepperIndex = 0,
     this.numberStepper = const [],
     this.stepPages = const [],
+    this.swimSchool = const SwimSchool.empty(),
     this.swimLevel = const SwimLevel.empty(),
     this.swimSeasonInfo = const SwimSeasonInfo.empty(),
     this.birthDay = const BirthDay.empty(),
     this.swimCourseInfo = const SwimCourseInfo.empty(),
     this.swimPools = const [],
     this.dateSelection = const DateSelection.empty(),
-    this.kindPersonalInfos = const [],
+    this.childInfoLength = 0,
+    this.childInfoIndex = 0,
+    this.activeChildPageIndex = 0,
+    this.activeGuardianPageIndex = 0,
+    this.kindPersonalInfo = const KindPersonalInfo.empty(),
     this.personalInfo = const PersonalInfo.empty(),
     this.configApp = const ConfigApp.empty(),
   });
@@ -20,14 +25,19 @@ class SwimGeneratorState extends Equatable {
   final int stepperLength;
   final int activeStepperIndex;
   final List<int> numberStepper;
-  final List<int> stepPages;
+  final List<StepPage> stepPages;
+  final SwimSchool swimSchool;
   final SwimLevel swimLevel;
   final SwimSeasonInfo swimSeasonInfo;
   final BirthDay birthDay;
   final SwimCourseInfo swimCourseInfo;
   final List<SwimPoolInfo> swimPools;
   final DateSelection dateSelection;
-  final List<KindPersonalInfo> kindPersonalInfos;
+  final int childInfoLength;
+  final int childInfoIndex;
+  final int activeChildPageIndex;
+  final int activeGuardianPageIndex;
+  final KindPersonalInfo kindPersonalInfo;
   final PersonalInfo personalInfo;
   final ConfigApp configApp;
 
@@ -35,7 +45,8 @@ class SwimGeneratorState extends Equatable {
     int? stepperLength,
     int? activeStepperIndex,
     List<int>? numberStepper,
-    List<int>? stepPages,
+    List<StepPage>? stepPages,
+    SwimSchool? swimSchool,
     List<bool>? shouldUseFutureBuilderList,
     SwimLevel? swimLevel,
     SwimSeasonInfo? swimSeasonInfo,
@@ -43,7 +54,11 @@ class SwimGeneratorState extends Equatable {
     SwimCourseInfo? swimCourseInfo,
     List<SwimPoolInfo>? swimPools,
     DateSelection? dateSelection,
-    List<KindPersonalInfo>? kindPersonalInfos,
+    int? childInfoLength,
+    int? childInfoIndex,
+    int? activeChildPageIndex,
+    int? activeGuardianPageIndex,
+    KindPersonalInfo? kindPersonalInfo,
     PersonalInfo? personalInfo,
     bool? isEmailExists,
     ConfigApp? configApp,
@@ -53,13 +68,19 @@ class SwimGeneratorState extends Equatable {
       activeStepperIndex: activeStepperIndex ?? this.activeStepperIndex,
       numberStepper: numberStepper ?? this.numberStepper,
       stepPages: stepPages ?? this.stepPages,
+      swimSchool: swimSchool ?? this.swimSchool,
       swimLevel: swimLevel ?? this.swimLevel,
       swimSeasonInfo: swimSeasonInfo ?? this.swimSeasonInfo,
       birthDay: birthDay ?? this.birthDay,
       swimCourseInfo: swimCourseInfo ?? this.swimCourseInfo,
       swimPools: swimPools ?? this.swimPools,
       dateSelection: dateSelection ?? this.dateSelection,
-      kindPersonalInfos: kindPersonalInfos ?? this.kindPersonalInfos,
+      childInfoLength: childInfoLength ?? this.childInfoLength,
+      childInfoIndex: childInfoIndex ?? this.childInfoIndex,
+      activeChildPageIndex: activeChildPageIndex ?? this.activeChildPageIndex,
+      activeGuardianPageIndex:
+          activeGuardianPageIndex ?? this.activeGuardianPageIndex,
+      kindPersonalInfo: kindPersonalInfo ?? this.kindPersonalInfo,
       personalInfo: personalInfo ?? this.personalInfo,
       configApp: configApp ?? this.configApp,
     );
@@ -67,18 +88,23 @@ class SwimGeneratorState extends Equatable {
 
   @override
   List<Object> get props => [
-    stepperLength,
-    activeStepperIndex,
-    numberStepper,
-    stepPages,
-    swimLevel,
-    swimSeasonInfo,
-    birthDay,
-    swimCourseInfo,
-    swimPools,
-    dateSelection,
-    kindPersonalInfos,
-    personalInfo,
-    configApp,
-  ];
+        stepperLength,
+        activeStepperIndex,
+        numberStepper,
+        stepPages,
+        swimSchool,
+        swimLevel,
+        swimSeasonInfo,
+        birthDay,
+        swimCourseInfo,
+        swimPools,
+        dateSelection,
+        childInfoLength,
+        childInfoIndex,
+        activeChildPageIndex,
+        activeGuardianPageIndex,
+        kindPersonalInfo,
+        personalInfo,
+        configApp,
+      ];
 }

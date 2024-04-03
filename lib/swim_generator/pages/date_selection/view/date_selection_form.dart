@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_holo_date_picker/date_picker.dart';
-import 'package:flutter_holo_date_picker/i18n/date_picker_i18n.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:formz/formz.dart';
 import 'package:intl/intl.dart';
@@ -64,18 +62,35 @@ class _DateSelectionForm extends State<DateSelectionForm> {
 
   @override
   Widget build(BuildContext context) {
-    final TextEditingController desiredDateController1 =
-        TextEditingController();
-    final TextEditingController desiredTimeController1 =
-        TextEditingController();
-    final TextEditingController desiredDateController2 =
-        TextEditingController();
-    final TextEditingController desiredTimeController2 =
-        TextEditingController();
-    final TextEditingController desiredDateController3 =
-        TextEditingController();
-    final TextEditingController desiredTimeController3 =
-        TextEditingController();
+    List<Widget> generateDesiredDateTimeInputs(
+        int numberOfTimes, List<DateTime> selectedDates) {
+      List<TextEditingController> dateControllers = [];
+      List<TextEditingController> timeControllers = [];
+      for (int i = 0; i < numberOfTimes; i++) {
+        TextEditingController dateController = TextEditingController();
+        TextEditingController timeController = TextEditingController();
+
+        if (i < selectedDates.length) {
+          dateController.text =
+              DateFormat('dd.MM.yyyy').format(selectedDates[i]);
+        }
+
+        dateControllers.add(dateController);
+        timeControllers.add(timeController);
+      }
+
+      List<Widget> widgets = [];
+      for (int i = 0; i < numberOfTimes; i++) {
+        widgets.add(DesiredDateTimeInput(
+          dateController: dateControllers[i],
+          timeController: timeControllers[i],
+          index: i,
+          title: 'Zeitwunsch ${i + 1}',
+        ));
+      }
+      return widgets;
+    }
+
     return BlocListener<DateSelectionBloc, DateSelectionState>(
       listener: (context, state) {
         if (state.submissionStatus.isFailure) {
@@ -88,83 +103,55 @@ class _DateSelectionForm extends State<DateSelectionForm> {
       },
       child: Column(
         children: [
-          if (BlocProvider.of<SwimGeneratorCubit>(context)
-              .state
-              .configApp
-              .isBooking) ...[
-            _FlexFixDateSelected(),
-            const SizedBox(
-              height: 16,
-            ),
-            _FixDatesRadioButton(),
-            const DesiredDateTimeText(),
-            BirthDataInputMulti(
-              dateController1: desiredDateController1,
-              dateController2: desiredDateController2,
-              dateController3: desiredDateController3,
-            ),
-            DesiredDateTimeInput(
-              dateController: desiredDateController1,
-              timeController: desiredTimeController1,
-              title: 'Wunschtermin 1',
-              onDateTimeSelected: (date, time) {
-                context
-                    .read<DateSelectionBloc>()
-                    .add(UpdateDateTime1(date: date, time: time));
-              },
-            ),
-            const SizedBox(
-              height: 16,
-            ),
-            DesiredDateTimeInput(
-              dateController: desiredDateController2,
-              timeController: desiredTimeController2,
-              title: 'Wunschtermin 2',
-              onDateTimeSelected: (date, time) {
-                context
-                    .read<DateSelectionBloc>()
-                    .add(UpdateDateTime2(date: date, time: time));
-              },
-            ),
-            const SizedBox(
-              height: 16,
-            ),
-            DesiredDateTimeInput(
-              dateController: desiredDateController3,
-              timeController: desiredTimeController3,
-              title: 'Wunschtermin 3',
-              onDateTimeSelected: (date, time) {
-                context
-                    .read<DateSelectionBloc>()
-                    .add(UpdateDateTime3(date: date, time: time));
-              },
-            ),
-            const SizedBox(
-              height: 32,
-            ),
-          ] else ...[
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                  'Wir nehmen Deine Buchung als RESERVIERUNG entgegen.\n\n'
-                  'Wir senden Dir zum 1.2 per Mail die Fixtermine zu. Sollten'
-                  ' diese nicht in Euren Zeitplan passen hast du immer noch die '
-                  'Möglichkeit per FLEX-Termine Kurze zu buchen'),
-            ),
-          ],
-          const SizedBox(
-            height: 32,
+          BlocBuilder<DateSelectionBloc, DateSelectionState>(
+            builder: (context, state) {
+              return Column(
+                children: [
+                  if (BlocProvider.of<SwimGeneratorCubit>(context)
+                      .state
+                      .configApp
+                      .isBooking) ...[
+                    _FlexFixDateSelected(),
+                    const SizedBox(
+                      height: 16,
+                    ),
+                    _FixDatesRadioButton(),
+                    const DesiredDateTimeText(),
+                    const BirthDataInputMulti(),
+                    if (state.selectedDateTimeLength > 1) ...[
+                      ...generateDesiredDateTimeInputs(
+                          state.selectedDateTimeLength, state.selectedDates!),
+                    ],
+                    const SizedBox(
+                      height: 32,
+                    ),
+                  ] else ...[
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                          'Wir nehmen Deine Buchung als RESERVIERUNG entgegen.\n\n'
+                          'Wir senden Dir zum 1.2 per Mail die Fixtermine zu. Sollten'
+                          ' diese nicht in Euren Zeitplan passen hast du immer noch die '
+                          'Möglichkeit per FLEX-Termine Kurze zu buchen'),
+                    ),
+                  ],
+                  const SizedBox(
+                    height: 32,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Expanded(child: _CancelButton()),
+                      const SizedBox(
+                        width: 8.0,
+                      ),
+                      Expanded(child: _SubmitButton())
+                    ],
+                  )
+                ],
+              );
+            },
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Expanded(child: _CancelButton()),
-              const SizedBox(
-                width: 8.0,
-              ),
-              Expanded(child: _SubmitButton())
-            ],
-          )
         ],
       ),
     );
@@ -330,6 +317,7 @@ class DesiredDateTimeText extends StatelessWidget {
                         "Einmal die Woche macht keinen Sinn.",
                     style: TextStyle(
                       fontSize: 16,
+                      color: Colors.black,
                     ),
                   ),
                 ],
@@ -343,15 +331,8 @@ class DesiredDateTimeText extends StatelessWidget {
 }
 
 class BirthDataInputMulti extends StatefulWidget {
-  final TextEditingController dateController1;
-  final TextEditingController dateController2;
-  final TextEditingController dateController3;
-
   const BirthDataInputMulti({
     super.key,
-    required this.dateController1,
-    required this.dateController2,
-    required this.dateController3,
   });
 
   @override
@@ -363,6 +344,7 @@ class _BirthDataInputMulti extends State<BirthDataInputMulti> {
   Widget build(BuildContext context) {
     return BlocBuilder<DateSelectionBloc, DateSelectionState>(
       builder: (context, state) {
+        final myBloc = BlocProvider.of<DateSelectionBloc>(context);
         return Visibility(
           visible: (state.flexFixDate &&
                   context
@@ -384,27 +366,56 @@ class _BirthDataInputMulti extends State<BirthDataInputMulti> {
             style: ElevatedButton.styleFrom(
                 elevation: 0, backgroundColor: Colors.lightBlueAccent),
             onPressed: () async {
-              final List<DateTime>? selectedDates =
-                  await showDialog<List<DateTime>>(
+              List<DateTime>? selectedDates = [];
+              selectedDates = await showDialog<List<DateTime>>(
                 context: context,
                 builder: (BuildContext context) {
                   List<DateTime> tempSelectedDates = [];
-                  bool showError = false; // Zustandsvariable für Fehlermeldung
+                  bool showError = false;
+                  String errorText = '';
                   return StatefulBuilder(
                     builder: (context, setState) {
-                      // Funktion zum Einreichen der Auswahl
-                      void submitSelection() {
+                      void submitSelection(DateSelectionBloc myBloc) {
                         tempSelectedDates.sort((a, b) => a.compareTo(b));
-                        if (tempSelectedDates.length == 3 &&
-                            tempSelectedDates[2]
-                                    .difference(tempSelectedDates[0])
-                                    .inDays <=
-                                5) {
-                          Navigator.of(context).pop(tempSelectedDates);
+                        Map<int, int> daysRange = {
+                          3: 6,
+                          // Wenn 3 Tage ausgewählt, sollten alle Termine innerhalb von 6 Tagen liegen
+                          4: 7,
+                          // Wenn 4 Tage ausgewählt, sollten alle Termine innerhalb von 7 Tagen liegen
+                          5: 8,
+                          // Wenn 5 Tage ausgewählt, sollten alle Termine innerhalb von 8 Tagen liegen
+                          6: 10
+                          // Wenn 6 Tage ausgewählt, sollten alle Termine innerhalb von 10 Tagen liegen
+                        };
+                        setState(() {
+                          showError = false;
+                          errorText = '';
+                        });
+
+                        // Anzahl der ausgewählten Tage
+                        int numSelectedDays = tempSelectedDates.length;
+
+                        if (daysRange.containsKey(numSelectedDays)) {
+                          if (tempSelectedDates.last
+                                  .difference(tempSelectedDates.first)
+                                  .inDays <=
+                              daysRange[numSelectedDays]!) {
+                            myBloc.add(UpdateSelectedDateTimeLength(
+                                selectedDateTimeLength:
+                                    tempSelectedDates.length));
+                            Navigator.of(context).pop(tempSelectedDates);
+                          } else {
+                            setState(() {
+                              showError = true;
+                              errorText =
+                                  'Alle ausgewählten Tage müssen innerhalb von ${daysRange[numSelectedDays]} Tagen liegen.';
+                            });
+                          }
                         } else {
                           setState(() {
-                            showError =
-                                true; // Setzen des Fehlers, um die Nachricht anzuzeigen
+                            showError = true;
+                            errorText =
+                                'Ungültige Anzahl von Tagen ausgewählt.';
                           });
                         }
                       }
@@ -412,14 +423,14 @@ class _BirthDataInputMulti extends State<BirthDataInputMulti> {
                       return AlertDialog(
                         title: const Text('Wähle 3 Termine'),
                         content: Column(
-                          mainAxisSize: MainAxisSize
-                              .min, // Verhindert, dass der Inhalt zu groß wird
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             SizedBox(
                               height: 300,
                               width: 300,
                               child: SfDateRangePicker(
                                 showActionButtons: false,
+                                // initialSelectedDates: state.selectedDates,
                                 cancelText: 'Abbrechen',
                                 onSelectionChanged:
                                     (DateRangePickerSelectionChangedArgs args) {
@@ -429,8 +440,7 @@ class _BirthDataInputMulti extends State<BirthDataInputMulti> {
                                         selectedList.length > 3) {
                                       tempSelectedDates = selectedList;
                                       setState(() {
-                                        showError =
-                                            false; // Fehler zurücksetzen, wenn die Auswahl gültig ist
+                                        showError = false;
                                       });
                                     }
                                   }
@@ -441,12 +451,12 @@ class _BirthDataInputMulti extends State<BirthDataInputMulti> {
                                 enablePastDates: false,
                               ),
                             ),
-                            if (showError) // Anzeigen der Fehlermeldung, wenn showError true ist
-                              const Padding(
-                                padding: EdgeInsets.only(top: 8.0),
+                            if (showError)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
                                 child: Text(
-                                  'Alle ausgewählten Tage müssen innerhalb\n von 6 Tagen liegen.',
-                                  style: TextStyle(color: Colors.red),
+                                  errorText,
+                                  style: const TextStyle(color: Colors.red),
                                 ),
                               ),
                           ],
@@ -460,8 +470,9 @@ class _BirthDataInputMulti extends State<BirthDataInputMulti> {
                             style: ElevatedButton.styleFrom(
                                 elevation: 0,
                                 backgroundColor: Colors.lightBlueAccent),
-                            onPressed: tempSelectedDates.length == 3
-                                ? submitSelection
+                            onPressed: tempSelectedDates.length >= 3 &&
+                                    tempSelectedDates.length <= 6
+                                ? () => submitSelection(myBloc)
                                 : null,
                             child: const Text('OK'),
                           ),
@@ -472,26 +483,23 @@ class _BirthDataInputMulti extends State<BirthDataInputMulti> {
                 },
               );
 
-              if (selectedDates != null && selectedDates.length == 3) {
-                widget.dateController1.text =
-                    DateFormat('dd.MM.yyyy').format(selectedDates[0]);
-                widget.dateController2.text =
-                    DateFormat('dd.MM.yyyy').format(selectedDates[1]);
-                widget.dateController3.text =
-                    DateFormat('dd.MM.yyyy').format(selectedDates[2]);
-                setState(
-                    () {}); // Erzwingen Sie ein Update der Benutzeroberfläche, falls erforderlich
+              if (selectedDates != null) {
+                if (!context.mounted) return;
+                selectedDates.sort((a, b) => a.compareTo(b));
+                context.read<DateSelectionBloc>().add(
+                      UpdateSelectedDates(
+                        selectedDates: selectedDates,
+                      ),
+                    );
+                setState(() {});
               }
             },
             child: const Row(
-              mainAxisSize:
-                  MainAxisSize.min, // Verhindert, dass die Row zu breit wird
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text('Wunschtermine wählen'),
                 SizedBox(width: 12.0),
                 Icon(Icons.calendar_month_sharp, size: 20),
-                // Kalender-Icon
-                // Fügt einen Abstand zwischen Icon und Text hinzu// Der Text des Buttons
               ],
             ),
           ),
@@ -504,20 +512,22 @@ class _BirthDataInputMulti extends State<BirthDataInputMulti> {
 class DesiredDateTimeInput extends StatelessWidget {
   final TextEditingController dateController;
   final TextEditingController timeController;
+  final int index;
   final String title;
-  final Function(DateTime, TimeOfDay) onDateTimeSelected;
 
   const DesiredDateTimeInput({
     super.key,
     required this.dateController,
     required this.timeController,
+    required this.index,
     required this.title,
-    required this.onDateTimeSelected,
   });
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DateSelectionBloc, DateSelectionState>(
+      buildWhen: (previous, current) =>
+          previous.selectedTimes?[-1] != current.selectedTimes?[-1],
       builder: (context, state) {
         if (!state.flexFixDate) {
           dateController.text = '';
@@ -581,11 +591,18 @@ class DesiredDateTimeInput extends StatelessWidget {
                       )),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: TextField(
+                        child: TextFormField(
+                          onChanged: (val) {
+                            context.read<DateSelectionBloc>().add(
+                                UpdateSelectedTimes(
+                                    index: index,
+                                    selectedTime: TimeOfDay(
+                                        hour: int.parse(val), minute: 0)));
+                          },
                           controller: timeController,
-                          readOnly: true,
+                          readOnly: false,
                           onTap: () async {
-                            await _selectTime(context);
+                            await _selectTime(context, index);
                           },
                           decoration: const InputDecoration(
                             labelText: 'Uhrzeit',
@@ -603,59 +620,22 @@ class DesiredDateTimeInput extends StatelessWidget {
     );
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? pickedDate = await DatePicker.showSimpleDatePicker(
-      context,
-      lastDate: DateTime(
-          DateTime.now().year + 1, DateTime.now().month, DateTime.now().day),
-      firstDate: DateTime(
-          DateTime.now().year, DateTime.now().month, DateTime.now().day + 7),
-      initialDate: DateTime(
-          DateTime.now().year, DateTime.now().month, DateTime.now().day + 7),
-      dateFormat: "dd.MMMM.yyyy",
-      locale: DateTimePickerLocale.de,
-      looping: false,
-      pickerMode: DateTimePickerMode.date,
-      //backgroundColor: Colors.lightBlueAccent,
-      titleText: "Datum auswählen",
-      itemTextStyle: const TextStyle(
-        fontSize: 18,
-        color: Colors.black,
-      ),
-    );
-
-    if (pickedDate != null) {
-      final TimeOfDay? existingTime = _getTimeFromController();
-
-      if (existingTime != null) {
-        onDateTimeSelected(pickedDate, existingTime);
-      }
-      var formattedDate = DateFormat('dd.MM.yyyy').format(pickedDate);
-      dateController.text = formattedDate;
-    }
-  }
-
-  Future<void> _selectTime(BuildContext context) async {
+  Future<void> _selectTime(BuildContext context, int index) async {
     Time time = Time(hour: 11, minute: 00, second: 00);
-    Navigator.of(context)
-        .push(
+    Navigator.of(context).push(
       showPicker(
         context: context,
         value: time,
         onChange: (TimeOfDay newTime) {
-          // Konvertieren Sie die Stunden und Minuten in Strings
-          String formattedHour = newTime.hour
-              .toString()
-              .padLeft(2, '0'); // Fügt eine führende Null hinzu, wenn nötig
-          String formattedMinute = newTime.minute
-              .toString()
-              .padLeft(2, '0'); // Fügt eine führende Null hinzu, wenn nötig
+          String formattedHour = newTime.hour.toString().padLeft(2, '0');
+          String formattedMinute = newTime.minute.toString().padLeft(2, '0');
 
-          // Kombinieren der formatierten Stunden und Minuten zu einem HH:MM-Format
           String formattedTime = "$formattedHour:$formattedMinute";
-
-          // Setzen des formatierten Strings im TextController
           timeController.text = formattedTime;
+
+          context
+              .read<DateSelectionBloc>()
+              .add(UpdateSelectedTimes(index: index, selectedTime: newTime));
         },
         is24HrFormat: true,
         sunrise: const TimeOfDay(hour: 6, minute: 0),
@@ -669,41 +649,6 @@ class DesiredDateTimeInput extends StatelessWidget {
         height: 250,
       ),
     );
-  }
-
-  String _formatTimeOfDay(TimeOfDay time) {
-    final now = DateTime.now();
-    final dt = DateTime(now.year, now.month, now.day, time.hour, time.minute);
-    final format = DateFormat.Hm();
-    return format.format(dt);
-  }
-
-  TimeOfDay? _getTimeFromController() {
-    try {
-      final timeString = timeController.text;
-      if (timeString.isEmpty) return null;
-
-      final timeParts = timeString.split(':');
-      final hour = int.parse(timeParts[0]);
-      final minute = int.parse(timeParts[1]);
-      return TimeOfDay(hour: hour, minute: minute);
-    } catch (e) {
-      return null;
-    }
-  }
-
-  DateTime? _getDateFromController() {
-    try {
-      final dateString = dateController.text;
-      if (dateString.isEmpty) return null;
-
-      // Erstellen Sie ein DateFormat, das mit dem Format übereinstimmt, das Sie verwenden
-      final format = DateFormat('dd.MM.yyyy');
-      return format.parse(dateString);
-    } catch (e) {
-      // Im Fehlerfall oder wenn das Datum nicht geparst werden kann, geben Sie null zurück
-      return null;
-    }
   }
 }
 
@@ -725,20 +670,22 @@ class _FixDatesRadioButton extends StatelessWidget {
         .indexWhere((element) =>
             element.swimPoolID == state.fixDates[index].swimPoolID);
 
-    String swimPoolName;
-    if (swimPoolIndex != -1) {
-      swimPoolName = context
-          .read<SwimGeneratorCubit>()
-          .state
-          .swimPools[swimPoolIndex]
-          .swimPoolName
-          .split(',')[1];
-    } else {
-      swimPoolName = "Unbekanntes Schwimmbad";
+    String extractCityName(String address) {
+      List<String> parts = address.split(',');
+      String cityPart = parts.last.trim();
+      List<String> cityParts = cityPart.split(' ');
+      cityParts.removeAt(0);
+      return cityParts.join(' ');
     }
 
+    String swimPoolCity = extractCityName(context
+        .read<SwimGeneratorCubit>()
+        .state
+        .swimPools[swimPoolIndex]
+        .swimPool
+        .swimPoolAddress);
     return Text(
-      '$fixDateFrom - $fixDateTo UM $fixDateTimeFrom - $fixDateTimeTo $swimPoolName',
+      '$fixDateFrom - $fixDateTo um $fixDateTimeFrom - $fixDateTimeTo in $swimPoolCity',
       overflow: TextOverflow.visible,
     );
   }
@@ -756,83 +703,105 @@ class _FixDatesRadioButton extends StatelessWidget {
               children: [
                 Visibility(
                   visible: state.hasFixedDesiredDate &&
-                      ((state.flexFixDate &&
-                              context
+                      (state.flexFixDate &&
+                          ((context
                                       .read<SwimGeneratorCubit>()
                                       .state
                                       .swimCourseInfo
                                       .swimCourse
                                       .swimCourseDateTypID ==
                                   1) ||
-                          context
-                                  .read<SwimGeneratorCubit>()
-                                  .state
-                                  .swimCourseInfo
-                                  .swimCourse
-                                  .swimCourseDateTypID ==
-                              3),
+                              context
+                                      .read<SwimGeneratorCubit>()
+                                      .state
+                                      .swimCourseInfo
+                                      .swimCourse
+                                      .swimCourseDateTypID ==
+                                  3)),
                   child: Card(
                     elevation: 4.0,
                     margin: const EdgeInsets.all(10.0),
                     child: Padding(
                       padding: const EdgeInsets.all(10.0),
-                      child: Column(
-                        children: [
-                          const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Passenden Termin auswählen',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.all(3.0),
-                              ),
-                              Text('*',
-                                  style: TextStyle(
-                                      color: Colors.red, fontSize: 16)),
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 24.0,
-                          ),
-                          ListView.separated(
-                            separatorBuilder: (_, __) =>
-                                Divider(color: Colors.grey[300]),
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            scrollDirection: Axis.vertical,
-                            itemCount: state.fixDates.length,
-                            itemBuilder: (context, index) {
-                              return SizedBox(
-                                // height: 50,
-                                child: Row(
+                      child: state.fixDates.isNotEmpty
+                          ? Column(
+                              children: [
+                                const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Radio(
-                                      activeColor: Colors.lightBlueAccent,
-                                      groupValue: state.fixDateModel.value,
-                                      value: state.fixDates[index].fixDateID,
-                                      onChanged: (val) {
+                                    Text(
+                                      'Passenden Termin auswählen',
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.all(3.0),
+                                    ),
+                                    Text('*',
+                                        style: TextStyle(
+                                            color: Colors.red, fontSize: 16)),
+                                  ],
+                                ),
+                                const SizedBox(
+                                  height: 24.0,
+                                ),
+                                ListView.separated(
+                                  separatorBuilder: (_, __) =>
+                                      Divider(color: Colors.grey[300]),
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  scrollDirection: Axis.vertical,
+                                  itemCount: state.fixDates.length,
+                                  itemBuilder: (context, index) {
+                                    return InkWell(
+                                      onTap: () {
                                         BlocProvider.of<DateSelectionBloc>(
                                                 context)
                                             .add(FixDateChanged(
-                                                val!, state.fixDates[index]));
+                                                state.fixDates[index].fixDateID,
+                                                state.fixDates[index]));
                                       },
-                                    ),
-                                    Flexible(
-                                      child: Wrap(
-                                        children: [
-                                          buildDateText(context, state, index),
-                                        ],
+                                      child: SizedBox(
+                                        // height: 50,
+                                        child: Row(
+                                          children: [
+                                            Radio(
+                                              activeColor:
+                                                  Colors.lightBlueAccent,
+                                              groupValue:
+                                                  state.fixDateModel.value,
+                                              value: state
+                                                  .fixDates[index].fixDateID,
+                                              onChanged: (val) {
+                                                BlocProvider.of<
+                                                            DateSelectionBloc>(
+                                                        context)
+                                                    .add(FixDateChanged(val!,
+                                                        state.fixDates[index]));
+                                              },
+                                            ),
+                                            Flexible(
+                                              child: Wrap(
+                                                children: [
+                                                  buildDateText(
+                                                      context, state, index),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    );
+                                  },
                                 ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
+                              ],
+                            )
+                          : const Center(
+                              child: Text(
+                                  'LEIDER biteten wir zur Zeit für den gewählten'
+                                  ' Kurs keinen FIXTERMIN an. Bitte sende '
+                                  'Deine Anmeldung mit der Auswahl '
+                                  'FLEXTERMIN ab.'),
+                            ),
                     ),
                   ),
                 ),
@@ -841,7 +810,7 @@ class _FixDatesRadioButton extends StatelessWidget {
                     alignment: Alignment.centerLeft,
                     child: Text(
                         'Wir nehmen Deine Buchung als RESERVIERUNG entgegen.\n\n'
-                        'Am 1.3. laden wir Dich per Email ein uns DEINE '
+                        'Am 1.5. laden wir Dich per Email ein uns DEINE '
                         'VERFÜGBAREN Termine für den Schwimmsommer den Du '
                         'gebucht hast zu nennen.\n\n'
                         'WIR PLANEN euren Schwimmkurs nach DEINER '
@@ -867,9 +836,8 @@ class _SubmitButton extends StatelessWidget {
                 fixDate: state.selectedFixDate,
                 flexFixDate: state.flexFixDate,
                 bookingDateTypID: state.bookingDateTypID,
-                dateTimes: state.bookingDateTypID == 3
-                    ? [state.dateTime1!, state.dateTime2!, state.dateTime3!]
-                    : [],
+                dateTimes:
+                    state.bookingDateTypID == 3 ? state.selectedDates! : [],
               ));
         }
       },

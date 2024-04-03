@@ -22,7 +22,7 @@ class _SwimPoolForm extends State<SwimPoolForm> {
     final swimPools = swimGeneratorCubit.state.swimPools;
 
     context.read<SwimPoolBloc>().add(LoadSwimPools(
-        swimGeneratorCubit.state.swimCourseInfo.swimCourse.swimCourseID));
+        swimGeneratorCubit.state.swimSchool.swimSchoolID));
 
     if (swimPools.isNotEmpty) {
       for (var swimPool in swimPools) {

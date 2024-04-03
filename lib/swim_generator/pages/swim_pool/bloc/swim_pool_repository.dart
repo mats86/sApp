@@ -65,4 +65,35 @@ class SwimPoolRepository {
     // Konvertieren Sie jeden JSON-Eintrag in ein SwimPool-Objekt
     return swimPoolsJson.map((json) => SwimPool.fromJson(json)).toList();
   }
+
+  Future<List<SwimPool>> fetchSwimPoolsBySwimSchool(int swimSchoolID) async {
+    final QueryOptions options = QueryOptions(
+      document: gql(GraphQLQueries.getSwimPoolsBySwimSchool),
+      variables: {'swimSchoolID': swimSchoolID},
+    );
+
+    final result = await graphQLClient.query(options);
+
+    // Überprüfen Sie, ob eine Ausnahme vorliegt, und werfen Sie diese gegebenenfalls
+    if (result.hasException) {
+      if (kDebugMode) {
+        print(
+            "Ausnahme beim Abrufen von SwimPools: ${result.exception.toString()}");
+      }
+      throw result.exception!;
+    }
+
+    // Überprüfen Sie, ob Daten vorhanden sind
+    if (result.data == null || result.data!['swimPoolsBySwimSchool'] == null) {
+      if (kDebugMode) {
+        print("Keine Daten gefunden");
+      }
+      return [];
+    }
+
+    List<dynamic> swimPoolsJson = result.data!['swimPoolsBySwimSchool'];
+
+    // Konvertieren Sie jeden JSON-Eintrag in ein SwimPool-Objekt
+    return swimPoolsJson.map((json) => SwimPool.fromJson(json)).toList();
+  }
 }

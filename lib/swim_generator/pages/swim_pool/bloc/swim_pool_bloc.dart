@@ -6,7 +6,6 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:swim_generator_app/swim_generator/pages/pages.dart';
 
 import '../../../../graphql/graphql_queries.dart';
-import '../../date_selection/model/fix_date.dart';
 import '../models/models.dart';
 import '../models/swim_pool.dart';
 
@@ -39,7 +38,7 @@ class SwimPoolBloc extends Bloc<SwimPoolEvent, SwimPoolState> {
       ) async {
     emit(state.copyWith(loadingStatus: FormzSubmissionStatus.inProgress));
     try {
-      var pools = await service.fetchSwimCourseSwimPools(event.swimCourseID);
+      var pools = await service.fetchSwimPoolsBySwimSchool(event.swimSchoolID);
       emit(state.copyWith(
           swimPools: pools, loadingStatus: FormzSubmissionStatus.success));
     } catch (e) {
@@ -61,6 +60,7 @@ class SwimPoolBloc extends Bloc<SwimPoolEvent, SwimPoolState> {
     newPools[event.index] = SwimPool(
         index: event.index,
         swimPoolID: pool.swimPoolID,
+        brevoListId: pool.brevoListId,
         swimPoolName: pool.swimPoolName,
         swimPoolAddress: pool.swimPoolAddress,
         swimPoolPhoneNumber: pool.swimPoolPhoneNumber,

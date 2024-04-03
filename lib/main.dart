@@ -6,8 +6,7 @@ import 'package:swim_generator_app/db_manager/pages/db_swim_course/view/db_swim_
 import 'package:swim_generator_app/db_manager/view/db_manager_page.dart';
 import 'package:swim_generator_app/swim_generator/models/school_info.dart';
 import 'package:swim_generator_app/swim_generator/swim_generator.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-import 'package:webview_flutter_web/webview_flutter_web.dart';
+import 'package:swim_generator_app/swim_generator/view/swim_generator_stepper.dart';
 import 'auth/pages/login/view/login_page.dart';
 import 'models/special_feature_mode.dart';
 import 'package:url_strategy/url_strategy.dart';
@@ -16,7 +15,7 @@ void main() {
   setPathUrlStrategy(); // Setzt die URL-Strategie auf Path-basiert um
   // final HttpLink httpLink = HttpLink('https://localhost:7188/graphql');
   final HttpLink httpLink = HttpLink(
-      'https://backend.happy-gagarin.194-164-56-243.plesk.page:5051/graphql');
+      'https://backend.brave-tu.194-164-56-243.plesk.page:5051/graphql');
 
   final ValueNotifier<GraphQLClient> client = ValueNotifier(
     GraphQLClient(
@@ -24,7 +23,7 @@ void main() {
       cache: GraphQLCache(),
     ),
   );
-  WebViewPlatform.instance = WebWebViewPlatform();
+  // WebViewPlatform.instance = WebWebViewPlatform();
   WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp(graphQLClient: client.value));
 }
@@ -53,8 +52,9 @@ class AppView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      initialRoute:
-      '/', // /db_fix_date?ref=50&code=40    '/?ref=10&code=10'
+      // initialRoute: '/codeKidsCourse?code=1711895887-U5ZB0KA5',
+      initialRoute: '/',
+      // /db_fix_date?ref=50&code=40    '/?ref=10&code=10'
       onGenerateRoute: _generateRoute,
       debugShowCheckedModeBanner: false,
       // theme: FlexThemeData.light(
@@ -111,10 +111,12 @@ class AppView extends StatelessWidget {
     String title = 'BUCHUNGS-TOOL';
     int swimCourseID = 0;
     bool isDirectLinks = true;
+    bool isCodeLinks = false;
+    String? code = '';
+    String? ref = '';
 
     Uri uri = Uri.parse(settings.name!);
-    String? code = uri.queryParameters['code'];
-    String? ref = uri.queryParameters['ref'];
+    ref = uri.queryParameters['ref'];
 
     switch (uri.path) {
       case '/':
@@ -192,11 +194,14 @@ class AppView extends StatelessWidget {
         break;
       case '/codeKidsCourse':
         mode = SpecialFeatureMode.codeKidsCourse;
-        isDirectLinks = true;
+        isDirectLinks = false;
+        isCodeLinks = true;
+        code = uri.queryParameters['code'];
         break;
       case '/codeAdultsCourse':
         mode = SpecialFeatureMode.codeAdultsCourse;
         isDirectLinks = true;
+        code = uri.queryParameters['code'];
         break;
       case '/db':
         return MaterialPageRoute(
@@ -204,18 +209,18 @@ class AppView extends StatelessWidget {
       case '/db_swim_course':
         return MaterialPageRoute(
             builder: (context) => DbSwimCoursePage(
-              graphQLClient: graphQLClient,
-            ));
+                  graphQLClient: graphQLClient,
+                ));
       case '/db_fix_date':
         return MaterialPageRoute(
             builder: (context) => DbFixDatePage(
-              graphQLClient: graphQLClient,
-            ));
+                  graphQLClient: graphQLClient,
+                ));
       case '/login':
         return MaterialPageRoute(
             builder: (context) => LoginPage(
-              graphQLClient: graphQLClient,
-            ));
+                  graphQLClient: graphQLClient,
+                ));
       default:
         return MaterialPageRoute(
           settings: const RouteSettings(name: '/'),
@@ -225,6 +230,7 @@ class AppView extends StatelessWidget {
             specialFeatureMode: SpecialFeatureMode.disabled,
             swimCourseID: 0,
             isDirectLinks: false,
+            isCodeLinks: false,
             schoolInfo: SchoolInfo.fromRef(ref ?? ''),
           ),
         );
@@ -236,6 +242,8 @@ class AppView extends StatelessWidget {
       specialFeatureMode: mode,
       swimCourseID: swimCourseID,
       isDirectLinks: isDirectLinks,
+      isCodeLinks: isCodeLinks,
+      code: code!,
       schoolInfo: SchoolInfo.fromRef(ref ?? ''),
     );
 
@@ -247,9 +255,11 @@ class MyHomePage extends StatelessWidget {
   final GraphQLClient graphQLClient;
   final String title;
   final SpecialFeatureMode specialFeatureMode;
-  final List<int> order;
+  final List<StepPage> order;
   final int swimCourseID;
   final bool isDirectLinks;
+  final bool isCodeLinks;
+  final String code;
   final SchoolInfo schoolInfo;
 
   MyHomePage({
@@ -259,51 +269,74 @@ class MyHomePage extends StatelessWidget {
     this.specialFeatureMode = SpecialFeatureMode.disabled,
     this.swimCourseID = 0,
     this.isDirectLinks = true,
+    this.isCodeLinks = false,
+    this.code = '',
     this.schoolInfo = const SchoolInfo(),
   }) : order = _generateOrder(specialFeatureMode);
 
-  static List<int> _generateOrder(SpecialFeatureMode mode) {
+  static List<StepPage> _generateOrder(SpecialFeatureMode mode) {
     switch (mode) {
       case SpecialFeatureMode.codeKidsCourse:
-        return [0, 1, 5, 6, 7, 8];
+        return [
+          StepPage.kindPersonalInfo,
+          StepPage.personalInfo,
+          StepPage.result,
+        ];
       case SpecialFeatureMode.codeAdultsCourse:
-        return [0, 1, 6, 7];
+        return [
+          StepPage.swimLevel,
+          StepPage.swimSeason,
+          StepPage.personalInfo,
+          StepPage.result
+        ];
+
       case SpecialFeatureMode.minis:
-        return [1, 2, 4, 5, 6, 7, 8];
       case SpecialFeatureMode.modul0:
-        return [1, 2, 4, 5, 6, 7, 8];
       case SpecialFeatureMode.schnupperModul:
-        return [1, 2, 4, 5, 6, 7, 8];
       case SpecialFeatureMode.basic_3x3:
-        return [1, 2, 4, 5, 6, 7, 8];
       case SpecialFeatureMode.seepferdchenFerienPfingsten:
-        return [1, 2, 4, 5, 6, 7, 8];
       case SpecialFeatureMode.seepferdchenFerienSommer:
-        return [1, 2, 4, 5, 6, 7, 8];
       case SpecialFeatureMode.betterSwim:
-        return [1, 2, 4, 5, 6, 7, 8];
       case SpecialFeatureMode.betterSwim2:
-        return [1, 2, 4, 5, 6, 7, 8];
       case SpecialFeatureMode.summerClass:
-        return [1, 2, 4, 5, 6, 7, 8];
       case SpecialFeatureMode.privatkursKind:
-        return [1, 2, 4, 5, 6, 7, 8];
-      case SpecialFeatureMode.privatkursErwachsen:
-        return [1, 2, 5, 6, 7, 8];
       case SpecialFeatureMode.privatkursKind2:
-        return [1, 2, 4, 5, 6, 7, 8];
-      case SpecialFeatureMode.privatkursErwachsen2:
-        return [1, 2, 5, 6, 7, 8];
       case SpecialFeatureMode.freundes3Kurs:
-        return [1, 2, 4, 5, 6, 7, 8];
       case SpecialFeatureMode.freundes3Kurs2:
-        return [1, 2, 4, 5, 6, 7, 8];
       case SpecialFeatureMode.elternKindKurs:
-        return [1, 2, 4, 5, 6, 7, 8];
       case SpecialFeatureMode.elternLehrenSwim:
-        return [1, 2, 4, 5, 6, 7, 8];
+        return [
+          StepPage.swimSeason,
+          StepPage.birthDay,
+          StepPage.swimPool,
+          StepPage.dateSelection,
+          StepPage.kindPersonalInfo,
+          StepPage.personalInfo,
+          StepPage.result,
+        ];
+      case SpecialFeatureMode.privatkursErwachsen:
+      case SpecialFeatureMode.privatkursErwachsen2:
+        return [
+          StepPage.swimSeason,
+          StepPage.birthDay,
+          StepPage.swimPool,
+          StepPage.dateSelection,
+          StepPage.personalInfo,
+          StepPage.result,
+        ];
       default:
-        return [0, 1, 2, 3, 4, 5, 6, 7, 8]; // default
+        return [
+          StepPage.swimSchool,
+          StepPage.swimLevel,
+          StepPage.swimSeason,
+          StepPage.birthDay,
+          StepPage.swimPool,
+          StepPage.swimCourse,
+          StepPage.dateSelection,
+          StepPage.kindPersonalInfo,
+          StepPage.personalInfo,
+          StepPage.result,
+        ]; // default
     }
   }
 
@@ -326,6 +359,8 @@ class MyHomePage extends StatelessWidget {
         order: order,
         swimCourseID: swimCourseID,
         isDirectLinks: isDirectLinks,
+        isCodeLinks: isCodeLinks,
+        code: code,
         schoolInfo: schoolInfo,
       ),
     );

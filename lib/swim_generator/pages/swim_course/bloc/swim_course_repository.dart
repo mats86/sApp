@@ -69,4 +69,27 @@ class SwimCourseRepository {
     // Konvertieren Sie jeden JSON-Eintrag in ein SwimCourse-Objekt
     return coursesJson.map((json) => SwimCourse.fromJson(json)).toList();
   }
+
+  Future<List<SwimCourse>> getVisibleSwimCoursesByLevelNameAndFutureAge(
+      String swimLevelName, DateTime birthdate, DateTime futureDate) async {
+    final QueryOptions options = QueryOptions(
+      document: gql(GraphQLQueries.getVisibleSwimCoursesByLevelNameAndFutureAge),
+      variables: {
+        'swimLevelName': swimLevelName,
+        'birthdate': birthdate.toIso8601String(),
+        'futureDate': futureDate.toIso8601String(),
+      },
+    );
+
+    final result = await graphQLClient.query(options);
+    if (result.hasException) {
+      throw result.exception!;
+    }
+
+    // Hier nehmen wir an, dass die Antwort eine Liste von Kursen ist
+    List<dynamic> coursesJson =
+    result.data!['visibleSwimCoursesByLevelNameAndFutureAge'];
+    // Konvertieren Sie jeden JSON-Eintrag in ein SwimCourse-Objekt
+    return coursesJson.map((json) => SwimCourse.fromJson(json)).toList();
+  }
 }

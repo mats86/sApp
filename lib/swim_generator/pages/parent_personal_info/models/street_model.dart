@@ -16,7 +16,7 @@ class StreetModel extends FormzInput<String, StreetValidationError> {
   const StreetModel.dirty([super.value = '']) : super.dirty();
 
   static final _streetNameRegex = RegExp(
-      r"^[a-zA-ZäöüßÄÖÜ0-9]+(([',. -][a-zA-ZäöüßÄÖÜ0-9 ])?[a-zA-ZäöüßÄÖÜ0-9]*)*$");
+      r"^[a-zA-ZäöüßÄÖÜ0-9_]+(([',. -][a-zA-ZäöüßÄÖÜ0-9_ ])?[a-zA-ZäöüßÄÖÜ0-9_]*)*$");
 
   @override
   StreetValidationError? validator(String value) {

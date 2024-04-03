@@ -16,11 +16,11 @@ class SwimPoolLoading extends SwimPoolEvent {
 }
 
 class LoadSwimPools extends SwimPoolEvent {
-  final int swimCourseID;
-  const LoadSwimPools(this.swimCourseID);
+  final int swimSchoolID;
+  const LoadSwimPools(this.swimSchoolID);
 
   @override
-  List<Object> get props => [swimCourseID];
+  List<Object> get props => [swimSchoolID];
 }
 
 class SwimPoolOptionToggled extends SwimPoolEvent {

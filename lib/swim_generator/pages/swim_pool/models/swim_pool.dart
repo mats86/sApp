@@ -1,6 +1,7 @@
 class SwimPool {
   final int index;
   final int swimPoolID;
+  final int brevoListId;
   final String swimPoolName;
   final String swimPoolAddress;
   final String swimPoolPhoneNumber;
@@ -12,6 +13,7 @@ class SwimPool {
   SwimPool({
     this.index = 0,
     required this.swimPoolID,
+    required this.brevoListId,
     required this.swimPoolName,
     required this.swimPoolAddress,
     required this.swimPoolPhoneNumber,
@@ -24,6 +26,7 @@ class SwimPool {
   const SwimPool.empty()
       : index = 0,
         swimPoolID = 0,
+        brevoListId = 0,
         swimPoolName = '',
         swimPoolAddress = '',
         swimPoolPhoneNumber = '',
@@ -37,16 +40,54 @@ class SwimPool {
 
     return SwimPool(
       swimPoolID: json['swimPoolID'],
+      brevoListId: json['brevoListId'],
       swimPoolName: json['swimPoolName'],
       swimPoolAddress: json['swimPoolAddress'],
       swimPoolPhoneNumber: json['swimPoolPhoneNumber'],
       swimPoolOpeningTimes:
-          openingTimesJson.map((i) => OpenTime.fromJson(i)).toList(),
+      openingTimesJson.map((i) => OpenTime.fromJson(i)).toList(),
       swimPoolHasFixedDate: json['swimPoolHasFixedDate'],
       isSwimPoolVisible: json['isSwimPoolVisible'],
       isSelected: false,
     );
   }
+  Map<String, dynamic> toJson() => {
+    'swimPoolID': swimPoolID,
+    'swimPoolName': swimPoolName,
+    'swimPoolAddress': swimPoolAddress,
+  };
+}
+
+class SwimPoolByCode {
+  final int swimPoolID;
+  final int brevoListId;
+  final String swimPoolName;
+
+  SwimPoolByCode({
+    required this.swimPoolID,
+    required this.brevoListId,
+    required this.swimPoolName,
+  });
+
+  const SwimPoolByCode.empty()
+      :
+        swimPoolID = 0,
+        brevoListId = 0,
+        swimPoolName = '';
+
+  factory SwimPoolByCode.fromJson(Map<String, dynamic> json) {
+
+    return SwimPoolByCode(
+      swimPoolID: json['swimPoolID'],
+      brevoListId: json['brevoListId'],
+      swimPoolName: json['swimPoolName'],
+    );
+  }
+  Map<String, dynamic> toJson() => {
+    'swimPoolID': swimPoolID,
+    'swimPoolName': swimPoolName,
+    'brevoListId': brevoListId,
+  };
 }
 
 class OpenTime {

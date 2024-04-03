@@ -5,7 +5,7 @@ class ResultRepository {
 
   ResultRepository({required this.graphQLClient});
 
-  Future<bool> executeCreateCompleteSwimCourseBooking(
+  Future<SwimCourseBookingResult> executeCreateCompleteSwimCourseBooking(
       CompleteSwimCourseBookingInput input) async {
     final MutationOptions options = MutationOptions(
       document: gql(GraphQLQueries.createCompleteSwimCourseBooking),
@@ -20,12 +20,21 @@ class ResultRepository {
       if (kDebugMode) {
         print(result.exception.toString());
       }
-      return false;
+      return SwimCourseBookingResult(
+        isSuccess: false,
+        errorMessage: result.exception.toString(),
+      );
     } else {
       if (kDebugMode) {
         print('Mutation erfolgreich');
       }
-      return true;
+      return SwimCourseBookingResult(
+        isSuccess: true,
+        swimCourseBookingData: result.data != null
+            ? SwimCourseBookingData.fromJson(
+                result.data?['createCompleteSwimCourseBooking'])
+            : null,
+      );
     }
   }
 
@@ -53,9 +62,9 @@ class ResultRepository {
     }
   }
 
-  Future<bool> createContact(CreateContactInput input) async {
+  Future<bool> createOrUpdateContact(CreateContactInput input) async {
     final MutationOptions options = MutationOptions(
-      document: gql(GraphQLQueries.createContact),
+      document: gql(GraphQLQueries.createOrUpdateContact),
       variables: {
         'input': input.toGraphqlJson(),
       },
@@ -73,6 +82,36 @@ class ResultRepository {
         print('Mutation erfolgreich');
       }
       return true;
+    }
+  }
+
+  Future<bool> createContacts(CreateContactsInput input) async {
+    final MutationOptions options = MutationOptions(
+      document: gql(GraphQLQueries.createContacts),
+      variables: {
+        'input': input.toGraphqlJson(),
+      },
+    );
+
+    try {
+      final QueryResult result = await graphQLClient.mutate(options);
+
+      if (result.hasException) {
+        if (kDebugMode) {
+          print(result.exception.toString());
+        }
+        throw Exception('Failed to create contacts');
+      } else {
+        if (kDebugMode) {
+          print('Mutation erfolgreich');
+        }
+        return true;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print(e.toString());
+      }
+      return false;
     }
   }
 }

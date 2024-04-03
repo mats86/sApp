@@ -23,9 +23,10 @@ class DateSelectionBloc extends Bloc<DateSelectionEvent, DateSelectionState> {
     on<SelectFlexDate>(_onSelectFlexDate);
     on<SelectFixDate>(_onSelectFixDate);
     on<FixDateChanged>(_onFixDateChanged);
-    on<UpdateDateTime1>(_onUpdateDateTime1);
-    on<UpdateDateTime2>(_onUpdateDateTime2);
-    on<UpdateDateTime3>(_onUpdateDateTime3);
+    on<UpdateSelectedDates>(_onUpdateSelectedDates);
+    on<UpdateSelectedTimes>(_onUpdateSelectedTimes);
+    on<UpdateSelectedDateTimeLength>(_onUpdateSelectedDateTimeLength);
+    on<UpdateIsValid>(_onUpdateIsValid);
     on<FormSubmitted>(_onFormSubmitted);
   }
 
@@ -35,8 +36,8 @@ class DateSelectionBloc extends Bloc<DateSelectionEvent, DateSelectionState> {
   ) async {
     emit(state.copyWith(loadingFixDates: FormzSubmissionStatus.inProgress));
     try {
-      var fixDates =
-          await service.loadFixDates(event.swimCourseID, event.swimPoolIDs);
+      var fixDates = await service.loadFixDatesSortedActive(
+          event.swimCourseID, event.swimPoolIDs);
       emit(state.copyWith(
           fixDates: fixDates, loadingFixDates: FormzSubmissionStatus.success));
     } catch (e) {
@@ -58,7 +59,7 @@ class DateSelectionBloc extends Bloc<DateSelectionEvent, DateSelectionState> {
   }
 
   void _onSelectFixDate(SelectFixDate event, Emitter<DateSelectionState> emit) {
-    final isValid = (state.flexFixDate);
+    // final isValid = (state.flexFixDate);
     emit(state.copyWith(
       flexFixDate: true,
       isValid: false,
@@ -80,91 +81,63 @@ class DateSelectionBloc extends Bloc<DateSelectionEvent, DateSelectionState> {
     );
   }
 
-  void _onUpdateDateTime1(
-    UpdateDateTime1 event,
+  void _onUpdateSelectedDates(
+    UpdateSelectedDates event,
     Emitter<DateSelectionState> emit,
   ) {
-    if (event.date != null && event.time != null) {
-      final dateTime1 = DateTimeModel.dirty(
-        DateTime(
-          event.date!.year,
-          event.date!.month,
-          event.date!.day,
-          event.time!.hour,
-          event.time!.minute,
-        ),
-      );
-      emit(
-        state.copyWith(
-          dateTime1: dateTime1.value,
-          isValid: Formz.validate(
-            [
-              dateTime1,
-              DateTimeModel.dirty(state.dateTime2),
-              DateTimeModel.dirty(state.dateTime3),
-            ],
-          ),
-        ),
-      );
-    } else {}
+    List<TimeOfDay> fixedLengthTimeList = List.filled(
+        event.selectedDates.length, const TimeOfDay(hour: 0, minute: 0));
+    emit(
+      state.copyWith(
+          selectedDates: event.selectedDates,
+          selectedTimes: fixedLengthTimeList),
+    );
   }
 
-  void _onUpdateDateTime2(
-    UpdateDateTime2 event,
-    Emitter<DateSelectionState> emit,
-  ) {
-    if (event.date != null && event.time != null) {
-      final dateTime2 = DateTimeModel.dirty(
-        DateTime(
-          event.date!.year,
-          event.date!.month,
-          event.date!.day,
-          event.time!.hour,
-          event.time!.minute,
-        ),
-      );
+  void _onUpdateSelectedTimes(
+      UpdateSelectedTimes event, Emitter<DateSelectionState> emit) async {
+    List<TimeOfDay>? updatedTimes = state.selectedTimes;
+    List<DateTime>? selectedDates = state.selectedDates;
+
+    if (event.index >= 0 &&
+        event.index < updatedTimes!.length &&
+        selectedDates != null) {
+      updatedTimes[event.index] = event.selectedTime;
+
+      List<DateTimeModel> updatedDateTimeModels = [];
+
+      for (int i = 0; i < updatedTimes.length; i++) {
+        final newDateTimeModel = DateTimeModel.dirty(
+          DateTime(
+            selectedDates[i].year,
+            selectedDates[i].month,
+            selectedDates[i].day,
+            updatedTimes[i].hour,
+            updatedTimes[i].minute,
+          ),
+        );
+        updatedDateTimeModels.add(newDateTimeModel);
+        selectedDates.add(newDateTimeModel.value!);
+      }
       emit(
         state.copyWith(
-          dateTime2: dateTime2.value,
-          isValid: Formz.validate(
-            [
-              DateTimeModel.dirty(state.dateTime1),
-              dateTime2,
-              DateTimeModel.dirty(state.dateTime3),
-            ],
-          ),
+          selectedTimes: updatedTimes,
+          selectedDates: selectedDates,
+          isValid: Formz.validate(updatedDateTimeModels),
         ),
       );
-    } else {}
+    }
   }
 
-  void _onUpdateDateTime3(
-    UpdateDateTime3 event,
+  void _onUpdateSelectedDateTimeLength(
+    UpdateSelectedDateTimeLength event,
     Emitter<DateSelectionState> emit,
   ) {
-    if (event.date != null && event.time != null) {
-      final dateTime3 = DateTimeModel.dirty(
-        DateTime(
-          event.date!.year,
-          event.date!.month,
-          event.date!.day,
-          event.time!.hour,
-          event.time!.minute,
-        ),
-      );
-      emit(
-        state.copyWith(
-          dateTime3: dateTime3.value,
-          isValid: Formz.validate(
-            [
-              DateTimeModel.dirty(state.dateTime1),
-              DateTimeModel.dirty(state.dateTime2),
-              dateTime3,
-            ],
-          ),
-        ),
-      );
-    } else {}
+    emit(state.copyWith(selectedDateTimeLength: event.selectedDateTimeLength));
+  }
+
+  void _onUpdateIsValid(UpdateIsValid event, Emitter<DateSelectionState> emit,) {
+    emit(state.copyWith(isValid: true));
   }
 
   void _onFormSubmitted(

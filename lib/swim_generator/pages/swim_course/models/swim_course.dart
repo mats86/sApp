@@ -4,6 +4,7 @@ class SwimCourse {
   final double swimCourseMinAge;
   final double swimCourseMaxAge;
   final double swimCoursePrice;
+  final int swimCourseGroupSize;
   final String swimCourseDescription;
   final int swimCourseDateTypID;
   final String swimCourseDuration;
@@ -23,6 +24,7 @@ class SwimCourse {
     required this.swimCourseMinAge,
     required this.swimCourseMaxAge,
     required this.swimCoursePrice,
+    required this.swimCourseGroupSize,
     required this.swimCourseDescription,
     required this.swimCourseDateTypID,
     required this.swimCourseDuration,
@@ -41,9 +43,16 @@ class SwimCourse {
     return SwimCourse(
       swimCourseID: json['swimCourseID'],
       swimCourseName: json['swimCourseName'],
-      swimCourseMinAge: json['swimCourseMinAge'],
-      swimCourseMaxAge: json['swimCourseMaxAge'],
-      swimCoursePrice: json['swimCoursePrice'].toDouble(),
+      swimCourseMinAge: (json['swimCourseMinAge'] is int)
+          ? (json['swimCourseMinAge'] as int).toDouble()
+          : json['swimCourseMinAge'],
+      swimCourseMaxAge: (json['swimCourseMaxAge'] is int)
+          ? (json['swimCourseMaxAge'] as int).toDouble()
+          : json['swimCourseMaxAge'],
+        swimCourseGroupSize: json['swimCourseGroupSize'],
+      swimCoursePrice: (json['swimCoursePrice'] is int)
+          ? (json['swimCoursePrice'] as int).toDouble()
+          : json['swimCoursePrice'],
       swimCourseDescription: json['swimCourseDescription'],
       swimCourseDateTypID: json['swimCourseDateTypID'],
       swimCourseDuration: json['swimCourseDuration'],
@@ -72,6 +81,7 @@ class SwimCourse {
         swimCourseName = '',
         swimCourseMinAge = 0,
         swimCourseMaxAge = 0,
+        swimCourseGroupSize = 0,
         swimCoursePrice = 0,
         swimCourseDescription = '',
         swimCourseDateTypID = 0,
@@ -91,6 +101,7 @@ class SwimCourse {
         swimCourseName.isEmpty &&
         swimCourseMinAge == 0 &&
         swimCourseMaxAge == 0 &&
+        swimCourseGroupSize == 0 &&
         swimCoursePrice == 0 &&
         swimCourseDescription.isEmpty &&
         swimCourseDateTypID == 0 &&

@@ -181,40 +181,52 @@ class _SwimSeasonRadioButton extends StatelessWidget {
                   child: Column(
                     children: [
                       ListView.separated(
-                        separatorBuilder: (_, __) =>
-                            Divider(color: Colors.grey[300]),
+                        separatorBuilder: (_, __) => Divider(color: Colors.grey[300]),
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         scrollDirection: Axis.vertical,
                         itemCount: state.swimSeasonOptions.length,
                         itemBuilder: (context, index) {
                           return SizedBox(
-                            // height: 50,
                             child: Visibility(
                               visible: true,
-                              child: Row(
-                                children: [
-                                  Radio(
-                                    activeColor: Colors.lightBlueAccent,
-                                    groupValue: state.swimSeason.value,
-                                    value: state.swimSeasonOptions[index].name,
-                                    onChanged: (val) {
-                                      BlocProvider.of<SwimSeasonBloc>(context).add(
-                                          SwimSeasonChanged(val.toString(),
-                                              state.swimSeasonOptions[index]));
-                                    },
-                                  ),
-                                  Flexible(
-                                    child: Wrap(
-                                      children: [
-                                        Text(
-                                          '${state.swimSeasonOptions[index].name} ',
-                                          overflow: TextOverflow.visible,
-                                        ),
-                                      ],
+                              child: InkWell( // Hier verwenden wir InkWell für visuelles Feedback
+                                onTap: () {
+                                  // Diese Funktion wird ausgelöst, wenn auf das gesamte Listenelement getippt wird
+                                  BlocProvider.of<SwimSeasonBloc>(context).add(
+                                      SwimSeasonChanged(
+                                          state.swimSeasonOptions[index].name,
+                                          state.swimSeasonOptions[index]
+                                      )
+                                  );
+                                },
+                                child: Row(
+                                  children: [
+                                    Radio(
+                                      activeColor: Colors.lightBlueAccent,
+                                      groupValue: state.swimSeason.value,
+                                      value: state.swimSeasonOptions[index].name,
+                                      onChanged: (val) {
+                                        BlocProvider.of<SwimSeasonBloc>(context).add(
+                                            SwimSeasonChanged(
+                                                val.toString(),
+                                                state.swimSeasonOptions[index]
+                                            )
+                                        );
+                                      },
                                     ),
-                                  ),
-                                ],
+                                    Flexible(
+                                      child: Wrap(
+                                        children: [
+                                          Text(
+                                            '${state.swimSeasonOptions[index].name} ',
+                                            overflow: TextOverflow.visible,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           );
@@ -296,7 +308,7 @@ class _CancelButton extends StatelessWidget {
             onPressed: () =>
                 context.read<SwimGeneratorCubit>().stepCancelled(),
             child: const Text(
-              'Abrechen',
+              'Zurück',
             ),
           );
         });

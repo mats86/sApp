@@ -7,6 +7,8 @@ class SwimCourseState extends Equatable {
     this.swimCourseOptions = const [],
     this.swimCourse = const SwimCourseModel.pure(),
     this.selectedCourse = const SwimCourse.empty(),
+    this.isForMultiChild = false,
+    this.dropdownValue = 2,
     this.isValid = false,
     this.loadingSeasonStatus = FormzSubmissionStatus.initial,
     this.loadingCourseStatus = FormzSubmissionStatus.initial,
@@ -19,6 +21,8 @@ class SwimCourseState extends Equatable {
   final List<SwimCourse> swimCourseOptions;
   final SwimCourseModel swimCourse;
   final SwimCourse selectedCourse;
+  final bool isForMultiChild;
+  final int dropdownValue;
   final bool isValid;
   final FormzSubmissionStatus loadingSeasonStatus;
   final FormzSubmissionStatus loadingCourseStatus;
@@ -31,6 +35,8 @@ class SwimCourseState extends Equatable {
     List<SwimCourse>? swimCourseOptions,
     SwimCourseModel? swimCourse,
     SwimCourse? selectedCourse,
+    bool? isForMultiChild,
+    int? dropdownValue,
     bool? isValid,
     FormzSubmissionStatus? loadingSeasonStatus,
     FormzSubmissionStatus? loadingCourseStatus,
@@ -43,6 +49,8 @@ class SwimCourseState extends Equatable {
       swimCourseOptions: swimCourseOptions ?? this.swimCourseOptions,
       swimCourse: swimCourse ?? this.swimCourse,
       selectedCourse: selectedCourse ?? this.selectedCourse,
+      isForMultiChild: isForMultiChild ?? this.isForMultiChild,
+      dropdownValue: dropdownValue ?? this.dropdownValue,
       isValid: isValid ?? this.isValid,
       loadingSeasonStatus: loadingSeasonStatus ?? this.loadingSeasonStatus,
       loadingCourseStatus: loadingCourseStatus ?? this.loadingCourseStatus,
@@ -53,13 +61,15 @@ class SwimCourseState extends Equatable {
 
   @override
   List<Object?> get props => [
-    swimSeasons,
-    swimSeason,
-    swimCourseOptions,
-    swimCourse,
-    loadingSeasonStatus,
-    loadingCourseStatus,
-    loadingWebPageStatus,
-    submissionStatus,
-  ];
+        swimSeasons,
+        swimSeason,
+        swimCourseOptions,
+        swimCourse,
+        isForMultiChild,
+        dropdownValue,
+        loadingSeasonStatus,
+        loadingCourseStatus,
+        loadingWebPageStatus,
+        submissionStatus,
+      ];
 }

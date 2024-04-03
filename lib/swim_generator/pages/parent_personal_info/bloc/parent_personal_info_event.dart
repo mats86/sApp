@@ -96,6 +96,14 @@ class ParentPhoneNumberConfirmChanged extends ParentPersonalInfoEvent {
   @override
   List<Object> get props => [phoneNumberConfirm];
 }
+class IsWhatsappNumberChanged extends ParentPersonalInfoEvent {}
+class UpdateIsWhatsappNumber extends ParentPersonalInfoEvent {
+  final bool isWhatsappNumber;
+  const UpdateIsWhatsappNumber(this.isWhatsappNumber);
+
+  @override
+  List<Object> get props => [isWhatsappNumber];
+}
 
 class IsEmailExists extends ParentPersonalInfoEvent {
   final bool isEmailExists;

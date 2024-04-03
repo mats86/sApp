@@ -10,6 +10,7 @@ abstract class SwimCourseEvent extends Equatable {
 class SwimCourseChanged extends SwimCourseEvent {
   final String swimCourse;
   final SwimCourse course;
+
   const SwimCourseChanged(this.swimCourse, this.course);
 
   @override
@@ -18,6 +19,7 @@ class SwimCourseChanged extends SwimCourseEvent {
 
 class SwimSeasonChanged extends SwimCourseEvent {
   final String swimSeason;
+
   const SwimSeasonChanged(this.swimSeason);
 
   @override
@@ -30,10 +32,33 @@ class LoadSwimCourseOptions extends SwimCourseEvent {
   final SwimLevelEnum swimLevel;
   final DateTime birthDay;
   final DateTime refDate;
+
   const LoadSwimCourseOptions(this.swimLevel, this.birthDay, this.refDate);
 
   @override
   List<Object> get props => [swimLevel, birthDay, refDate];
+}
+
+class ActiveMultiChild extends SwimCourseEvent {}
+
+class UpdateIsForMultiChild extends SwimCourseEvent {
+  final bool isForMultiChild;
+
+  const UpdateIsForMultiChild(this.isForMultiChild);
+
+  @override
+  List<Object> get props => [
+        isForMultiChild,
+      ];
+}
+
+class DropdownChanged extends SwimCourseEvent {
+  final int dropdownValue;
+
+  const DropdownChanged(this.dropdownValue);
+
+  @override
+  List<Object> get props => [dropdownValue];
 }
 
 class WebPageLoading extends SwimCourseEvent {}

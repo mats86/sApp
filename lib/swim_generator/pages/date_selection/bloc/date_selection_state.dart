@@ -8,9 +8,9 @@ class DateSelectionState extends Equatable {
   final bool hasFixedDesiredDate;
   final int bookingDateTypID;
   final bool flexFixDate;
-  final DateTime? dateTime1;
-  final DateTime? dateTime2;
-  final DateTime? dateTime3;
+  final List<DateTime>? selectedDates;
+  final List<TimeOfDay>? selectedTimes;
+  final int selectedDateTimeLength;
   final bool isValid;
   final FormzSubmissionStatus submissionStatus;
 
@@ -22,9 +22,9 @@ class DateSelectionState extends Equatable {
     this.hasFixedDesiredDate = false,
     this.bookingDateTypID = 0,
     this.flexFixDate = false,
-    this.dateTime1,
-    this.dateTime2,
-    this.dateTime3,
+    this.selectedDates = const [],
+    this.selectedTimes = const [],
+    this.selectedDateTimeLength = 0,
     this.isValid = false,
     this.submissionStatus = FormzSubmissionStatus.initial,
   });
@@ -37,9 +37,9 @@ class DateSelectionState extends Equatable {
     bool? hasFixedDesiredDate,
     int? bookingDateTypID,
     bool? flexFixDate,
-    DateTime? dateTime1,
-    DateTime? dateTime2,
-    DateTime? dateTime3,
+    List<DateTime>? selectedDates,
+    List<TimeOfDay>? selectedTimes,
+    int? selectedDateTimeLength,
     bool? isValid,
     FormzSubmissionStatus? submissionStatus,
   }) {
@@ -51,9 +51,10 @@ class DateSelectionState extends Equatable {
       hasFixedDesiredDate: hasFixedDesiredDate ?? this.hasFixedDesiredDate,
       bookingDateTypID: bookingDateTypID ?? this.bookingDateTypID,
       flexFixDate: flexFixDate ?? this.flexFixDate,
-      dateTime1: dateTime1 ?? this.dateTime1,
-      dateTime2: dateTime2 ?? this.dateTime2,
-      dateTime3: dateTime3 ?? this.dateTime3,
+      selectedDates: selectedDates ?? this.selectedDates,
+      selectedTimes: selectedTimes ?? this.selectedTimes,
+      selectedDateTimeLength:
+          selectedDateTimeLength ?? this.selectedDateTimeLength,
       isValid: isValid ?? this.isValid,
       submissionStatus: submissionStatus ?? this.submissionStatus,
     );
@@ -61,15 +62,15 @@ class DateSelectionState extends Equatable {
 
   @override
   List<Object?> get props => [
-    fixDates,
-    fixDateModel,
-    loadingFixDates,
-    hasFixedDesiredDate,
-    bookingDateTypID,
-    flexFixDate,
-    dateTime1,
-    dateTime2,
-    dateTime3,
-    submissionStatus
-  ];
+        fixDates,
+        fixDateModel,
+        loadingFixDates,
+        hasFixedDesiredDate,
+        bookingDateTypID,
+        flexFixDate,
+        selectedDates,
+        selectedTimes,
+        selectedDateTimeLength,
+        submissionStatus
+      ];
 }

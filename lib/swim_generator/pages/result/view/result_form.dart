@@ -25,6 +25,9 @@ class _ResultForm extends State<ResultForm> {
   @override
   void initState() {
     super.initState();
+    context
+        .read<SwimGeneratorCubit>()
+        .removeEmptyChildInfoAndCustomerInvitedInfo();
     context.read<ResultBloc>().add(ResultLoading(context
             .read<SwimGeneratorCubit>()
             .state
@@ -66,19 +69,61 @@ class _ResultForm extends State<ResultForm> {
               .swimCourse
               .isAdultCourse) ...[
             const _CustomHeader('DATEN SCHWIMMSCHÜLER:IN'),
-            _CustomText(
-              'Name',
-              '${context.read<SwimGeneratorCubit>().state.kindPersonalInfos[0].firstName} '
-                  '${context.read<SwimGeneratorCubit>().state.kindPersonalInfos[0].lastName}',
-            ),
-            _CustomText(
-              'Geburtstag',
-              DateFormat('dd.MM.yyy').format(
-                  context.read<SwimGeneratorCubit>().state.birthDay.birthDay!),
-            ),
-            const SizedBox(
-              height: 12.0,
-            ),
+            if (!context
+                .read<SwimGeneratorCubit>()
+                .state
+                .configApp
+                .isCodeLinks) ...[
+              ...List<Widget>.generate(
+                context
+                    .read<SwimGeneratorCubit>()
+                    .state
+                    .kindPersonalInfo
+                    .childInfosNoEmpty
+                    .length,
+                (index) {
+                  final childInfo = context
+                      .read<SwimGeneratorCubit>()
+                      .state
+                      .kindPersonalInfo
+                      .childInfosNoEmpty[index];
+                  return Column(
+                    children: <Widget>[
+                      _CustomText(
+                        '${index + 1}. Kind Name',
+                        '${childInfo.firstName.value} ${childInfo.lastName.value}',
+                      ),
+                      _CustomText(
+                        '${index + 1}. Kind Geburtstag',
+                        DateFormat('dd.MM.yyy')
+                            .format(childInfo.birthDay.value!),
+                      ),
+                      const SizedBox(
+                        height: 12.0,
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ] else ...[
+              _CustomText(
+                'Name',
+                '${context.read<SwimGeneratorCubit>().state.kindPersonalInfo.childInfo.firstName.value} ${context.read<SwimGeneratorCubit>().state.kindPersonalInfo.childInfo.lastName.value}',
+              ),
+              _CustomText(
+                'Geburtstag',
+                DateFormat('dd.MM.yyy').format(context
+                    .read<SwimGeneratorCubit>()
+                    .state
+                    .kindPersonalInfo
+                    .childInfo
+                    .birthDay
+                    .value!),
+              ),
+              const SizedBox(
+                height: 12.0,
+              ),
+            ]
           ],
           const _CustomHeader('DATEN ERZIEHUNGSBERECHTIGTER'),
           _CustomText(
@@ -104,6 +149,48 @@ class _ResultForm extends State<ResultForm> {
           const SizedBox(
             height: 12.0,
           ),
+          if (context
+              .read<SwimGeneratorCubit>()
+              .state
+              .kindPersonalInfo
+              .customerInvitedInfosNoEmpty
+              .isNotEmpty) ...[
+            const _CustomHeader("Eingeladene Freunde"),
+            ...List<Widget>.generate(
+              context
+                  .read<SwimGeneratorCubit>()
+                  .state
+                  .kindPersonalInfo
+                  .customerInvitedInfosNoEmpty
+                  .length,
+              (index) {
+                final customerInvitedInfo = context
+                    .read<SwimGeneratorCubit>()
+                    .state
+                    .kindPersonalInfo
+                    .customerInvitedInfosNoEmpty[index];
+                return Column(
+                  children: <Widget>[
+                    _CustomText(
+                      '${index + 1}. Freund Name',
+                      '${customerInvitedInfo.customerInvitedFirstName.value} ${customerInvitedInfo.customerInvitedLastName.value}',
+                    ),
+                    _CustomText(
+                      '${index + 1}. Freund Email',
+                      customerInvitedInfo.customerInvitedEmail.value,
+                    ),
+                    _CustomText(
+                      '${index + 1}. Freund Handynummer',
+                      customerInvitedInfo.customerInvitedPhoneNumber.value,
+                    ),
+                    const SizedBox(
+                      height: 12.0,
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
           const _CustomHeader('Gebuchter KURS/BAD'),
           _CustomText(
             'Kurs',
@@ -429,9 +516,7 @@ class _SubmitButton extends StatelessWidget {
       builder: (context, state) {
         bool isDataValid() {
           var cubit = context.read<SwimGeneratorCubit>().state;
-          return cubit.swimLevel.isNotEmpty &&
-              cubit.birthDay.isNotEmpty &&
-              cubit.swimCourseInfo.isNotEmpty &&
+          return cubit.swimCourseInfo.isNotEmpty &&
               cubit.swimPools.isNotEmpty &&
               cubit.personalInfo.isNotEmpty;
         }
@@ -451,13 +536,77 @@ class _SubmitButton extends StatelessWidget {
                 .state
                 .personalInfo
                 .phoneNumber,
-            listIds: [2],
+            whatsapp: context
+                .read<SwimGeneratorCubit>()
+                .state
+                .personalInfo
+                .whatsappNumber,
+            childFirstName:
+                context.read<SwimGeneratorCubit>().state.configApp.isCodeLinks
+                    ? context
+                        .read<SwimGeneratorCubit>()
+                        .state
+                        .kindPersonalInfo
+                        .childInfo
+                        .firstName
+                        .value
+                    : context
+                        .read<SwimGeneratorCubit>()
+                        .state
+                        .kindPersonalInfo
+                        .childInfosNoEmpty[0]
+                        .firstName
+                        .value,
+            childBirthDay:
+                context.read<SwimGeneratorCubit>().state.configApp.isCodeLinks
+                    ? context
+                        .read<SwimGeneratorCubit>()
+                        .state
+                        .kindPersonalInfo
+                        .childInfo
+                        .birthDay
+                        .value
+                        ?.toIso8601String()
+                    : context
+                        .read<SwimGeneratorCubit>()
+                        .state
+                        .kindPersonalInfo
+                        .childInfosNoEmpty[0]
+                        .birthDay
+                        .value
+                        ?.toIso8601String(),
+            listIds: context
+                .read<SwimGeneratorCubit>()
+                .state
+                .swimPools
+                .map((swimPoolItem) => swimPoolItem.swimPool.brevoListId)
+                .toList(),
             emailBlacklisted: false,
             smsBlacklisted: false,
             updateEnabled: false,
             smtpBlacklistSender: [
               context.read<SwimGeneratorCubit>().state.personalInfo.email
             ],
+            swimCourse: context
+                .read<SwimGeneratorCubit>()
+                .state
+                .swimCourseInfo
+                .swimCourse
+                .swimCourseName,
+            swimPool: context
+                .read<SwimGeneratorCubit>()
+                .state
+                .swimPools
+                .map((pool) => pool.swimPoolName)
+                .join(' - '),
+            fixDate: context
+                .read<SwimGeneratorCubit>()
+                .state
+                .dateSelection
+                .fixDate
+                .fixDateFrom
+                ?.toIso8601String(),
+            isWaitList: false,
           );
           bookingInput = CompleteSwimCourseBookingInput(
             loginEmail:
@@ -476,32 +625,32 @@ class _SubmitButton extends StatelessWidget {
                 .state
                 .personalInfo
                 .phoneNumber,
-            studentFirstName: context
-                    .read<SwimGeneratorCubit>()
-                    .state
-                    .swimCourseInfo
-                    .swimCourse
-                    .isAdultCourse
-                ? ''
-                : context
-                    .read<SwimGeneratorCubit>()
-                    .state
-                    .kindPersonalInfos[0]
-                    .firstName,
-            studentLastName: context
-                    .read<SwimGeneratorCubit>()
-                    .state
-                    .swimCourseInfo
-                    .swimCourse
-                    .isAdultCourse
-                ? ''
-                : context
-                    .read<SwimGeneratorCubit>()
-                    .state
-                    .kindPersonalInfos[0]
-                    .lastName,
-            birthDate:
-                context.read<SwimGeneratorCubit>().state.birthDay.birthDay!,
+            birthDate: context
+                .read<SwimGeneratorCubit>()
+                .state
+                .kindPersonalInfo
+                .childInfo
+                .birthDay
+                .value!,
+            childInfos:
+                context.read<SwimGeneratorCubit>().state.configApp.isCodeLinks
+                    ? [
+                        context
+                            .read<SwimGeneratorCubit>()
+                            .state
+                            .kindPersonalInfo
+                            .childInfo
+                      ]
+                    : context
+                        .read<SwimGeneratorCubit>()
+                        .state
+                        .kindPersonalInfo
+                        .childInfosNoEmpty,
+            customerInvitedInfos: context
+                .read<SwimGeneratorCubit>()
+                .state
+                .kindPersonalInfo
+                .customerInvitedInfosNoEmpty,
             swimCourseID: context
                 .read<SwimGeneratorCubit>()
                 .state
@@ -543,21 +692,8 @@ class _SubmitButton extends StatelessWidget {
                 .state
                 .dateSelection
                 .dateTimes,
-            isAdultCourse: context
-                .read<SwimGeneratorCubit>()
-                .state
-                .swimCourseInfo
-                .swimCourse
-                .isAdultCourse,
-            isGroupCourse: context
-                .read<SwimGeneratorCubit>()
-                .state
-                .swimCourseInfo
-                .swimCourse
-                .isGroupCourse,
           );
         }
-
         final isValid = context.select((ResultBloc bloc) => bloc.state.isValid);
         return state.submissionStatus.isInProgress
             ? const SpinKitWaveSpinner(
@@ -658,14 +794,13 @@ class _SubmitButton extends StatelessWidget {
                                   .map((pool) => pool.swimPoolName)
                                   .join(' - '),
                               pcfield5:
-                                  '${context.read<SwimGeneratorCubit>().state.kindPersonalInfos[0].firstName} ${context.read<SwimGeneratorCubit>().state.kindPersonalInfos[0].lastName}',
+                                  '${context.read<SwimGeneratorCubit>().state.kindPersonalInfo.childInfos[0].firstName} ${context.read<SwimGeneratorCubit>().state.kindPersonalInfo.childInfos[0].lastName}',
                               pcfield6: context
                                   .read<SwimGeneratorCubit>()
                                   .state
-                                  .kindPersonalInfos[0]
-                                  .kidsDevelopState
-                                  .map((e) => e)
-                                  .join(', '));
+                                  .kindPersonalInfo
+                                  .childInfos[0]
+                                  .kidsDevelopState);
                           context
                               .read<ResultBloc>()
                               .add(FormSubmittedVerein(vereinInput!));
@@ -740,9 +875,8 @@ Future<void> _showSuccessDialog(BuildContext context) async {
               _launchUrl(context
                   .read<SwimGeneratorCubit>()
                   .state
-                  .configApp
-                  .schoolInfo
-                  .websiteUrl);
+                  .swimSchool
+                  .swimSchoolUrl);
             },
           ),
         ],

@@ -28,54 +28,12 @@ class _ParentPersonalInfoForm extends State<ParentPersonalInfoForm> {
   final TextEditingController _emailConfirmController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
   final TextEditingController _phoneNumberConfirmController =
-  TextEditingController();
-
-  final FocusNode _titleFocusNode = FocusNode();
-  final FocusNode _firstNameFocusNode = FocusNode();
-  final FocusNode _lastNameFocusNode = FocusNode();
-  final FocusNode _streetFocusNode = FocusNode();
-  final FocusNode _streetNumberFocusNode = FocusNode();
-  final FocusNode _zipCodeFocusNode = FocusNode();
-  final FocusNode _cityFocusNode = FocusNode();
-  final FocusNode _emailFocusNode = FocusNode();
-  final FocusNode _emailConfirmFocusNode = FocusNode();
-  final FocusNode _phoneNumberFocusNode = FocusNode();
-  final FocusNode _phoneNumberConfirmFocusNode = FocusNode();
-
-  void _addFocusNodeListener(
-      FocusNode currentNode,
-      FocusNode? nextNode,
-      void Function()? onUnfocused,
-      ) {
-    currentNode.addListener(() {
-      if (!currentNode.hasFocus) {
-        if (onUnfocused != null) {
-          onUnfocused();
-        }
-        if (nextNode != null) {
-          FocusScope.of(context).requestFocus(nextNode);
-        }
-      }
-    });
-  }
+      TextEditingController();
 
   @override
   void initState() {
     super.initState();
     context.read<ParentPersonalInfoBloc>().add(LoadParentTitleOptions());
-
-    // _addFocusNodeListener(_titleFocusNode, _firstNameFocusNode, null);
-    // _addFocusNodeListener(_firstNameFocusNode, _lastNameFocusNode, null);
-    // _addFocusNodeListener(_lastNameFocusNode, _streetFocusNode, null);
-    // _addFocusNodeListener(_streetFocusNode, _streetNumberFocusNode, null);
-    // _addFocusNodeListener(_streetNumberFocusNode, _zipCodeFocusNode, null);
-    // _addFocusNodeListener(_zipCodeFocusNode, _cityFocusNode, null);
-    // _addFocusNodeListener(_cityFocusNode, _emailFocusNode, null);
-    // _addFocusNodeListener(_emailFocusNode, _emailConfirmFocusNode, null);
-    // _addFocusNodeListener(_emailConfirmFocusNode, _phoneNumberFocusNode, null);
-    // _addFocusNodeListener(
-    //     _phoneNumberFocusNode, _phoneNumberConfirmFocusNode, null);
-    // _addFocusNodeListener(_phoneNumberConfirmFocusNode, null, null);
 
     if (context
         .read<SwimGeneratorCubit>()
@@ -207,6 +165,12 @@ class _ParentPersonalInfoForm extends State<ParentPersonalInfoForm> {
               .personalInfo
               .phoneNumberConfirm));
     }
+
+    if (context.read<SwimGeneratorCubit>().state.personalInfo.whatsappNumber !=
+        '') {
+      BlocProvider.of<ParentPersonalInfoBloc>(context)
+          .add(const UpdateIsWhatsappNumber(true));
+    }
   }
 
   @override
@@ -242,8 +206,8 @@ class _ParentPersonalInfoForm extends State<ParentPersonalInfoForm> {
                   width: width < 400.0 ? width * 0.9 : 400,
                   child: const Text(
                       'Das E-Mail-Konto existiert bereits. Möchtest Du einen weiteren '
-                          'Schwimmkurs für ein zusätzliches Kind buchen? \n\nFalls '
-                          'nicht, gib bitte eine andere E-Mail-Adresse ein.'),
+                      'Schwimmkurs für ein zusätzliches Kind buchen? \n\nFalls '
+                      'nicht, gib bitte eine andere E-Mail-Adresse ein.'),
                 ),
                 actions: <Widget>[
                   TextButton(
@@ -268,7 +232,6 @@ class _ParentPersonalInfoForm extends State<ParentPersonalInfoForm> {
                       outerContext
                           .read<ParentPersonalInfoBloc>()
                           .add(const IsEmailExists(false));
-                      FocusScope.of(context).requestFocus(_emailFocusNode);
                       Navigator.of(dialogContext).pop();
                     },
                     child: const Text('Email ändern'),
@@ -302,20 +265,13 @@ class _ParentPersonalInfoForm extends State<ParentPersonalInfoForm> {
           ),
           _EmailInput(
             controller: _emailController,
-            focusNode: _emailFocusNode,
           ),
           _EmailConfirmInput(
             controller: _emailConfirmController,
           ),
-          // _PhoneNumberInput(
-          //   controller: _phoneNumberController,
-          // ),
-          // _PhoneNumberConfirmInput(
-          //   controller: _phoneNumberConfirmController,
-          // ),
-          //_PhoneNumberInput_(),
           _PhoneNumberInputFlag(),
           _PhoneNumberConfirmInputFlag(),
+          _IsWhatsappNumberSwitch(),
           const SizedBox(
             height: 16.0,
           ),
@@ -345,33 +301,32 @@ class _ParentTitle extends StatelessWidget {
         return InputDecorator(
           decoration: InputDecoration(
             contentPadding:
-            const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+                const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
             labelText: 'Anrede',
             border:
-            OutlineInputBorder(borderRadius: BorderRadius.circular(5.0)),
+                OutlineInputBorder(borderRadius: BorderRadius.circular(5.0)),
           ),
           child: DropdownButtonHideUnderline(
             child: !state.loadingTitleStatus.isSuccess
                 ? const SpinKitWaveSpinner(
-              color: Colors.lightBlueAccent,
-              size: 50.0,
-            )
+                    color: Colors.lightBlueAccent,
+                    size: 50.0,
+                  )
                 : DropdownButton<String>(
-              isExpanded: true,
-              value: state
-                  .title.value, // Hier sollte der ausgewählte Wert sein
-              items: state.titleList.map((String title) {
-                return DropdownMenuItem<String>(
-                  value: title,
-                  child: Text(title),
-                );
-              }).toList(),
-              onChanged: (value) {
-                // Dies wird aufgerufen, wenn der Benutzer ein Element auswählt.
-                BlocProvider.of<ParentPersonalInfoBloc>(context)
-                    .add(TitleChanged(value!));
-              },
-            ),
+                    isExpanded: true,
+                    value: state.title.value,
+                    items: state.titleList.map((String title) {
+                      return DropdownMenuItem<String>(
+                        value: title,
+                        child: Text(title),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      // Dies wird aufgerufen, wenn der Benutzer ein Element auswählt.
+                      BlocProvider.of<ParentPersonalInfoBloc>(context)
+                          .add(TitleChanged(value!));
+                    },
+                  ),
           ),
         );
       },
@@ -388,7 +343,7 @@ class _FirstNameInput extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ParentPersonalInfoBloc, ParentPersonalInfoState>(
         buildWhen: (previous, current) =>
-        previous.firstName != current.firstName,
+            previous.firstName != current.firstName,
         builder: (context, state) {
           return TextField(
             controller: controller,
@@ -473,7 +428,7 @@ class _StreetInput extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ParentPersonalInfoBloc, ParentPersonalInfoState>(
         buildWhen: (previous, current) =>
-        previous.parentStreet != current.parentStreet,
+            previous.parentStreet != current.parentStreet,
         builder: (context, state) {
           return TextField(
             controller: controller,
@@ -516,12 +471,12 @@ class _StreetNumberInput extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ParentPersonalInfoBloc, ParentPersonalInfoState>(
         buildWhen: (previous, current) =>
-        previous.streetNumber != current.streetNumber,
+            previous.streetNumber != current.streetNumber,
         builder: (context, state) {
           return TextField(
             controller: controller,
             key:
-            const Key('ParentPersonalInfoForm_StreetNumberInput_textField'),
+                const Key('ParentPersonalInfoForm_StreetNumberInput_textField'),
             onChanged: (streetNumber) => context
                 .read<ParentPersonalInfoBloc>()
                 .add(ParentStreetNumberChanged(streetNumber)),
@@ -641,9 +596,8 @@ class _CityInput extends StatelessWidget {
 
 class _EmailInput extends StatelessWidget {
   final TextEditingController controller;
-  final FocusNode focusNode;
 
-  const _EmailInput({required this.controller, required this.focusNode});
+  const _EmailInput({required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -652,7 +606,6 @@ class _EmailInput extends StatelessWidget {
         builder: (context, state) {
           return TextFormField(
             controller: controller,
-            focusNode: focusNode,
             enableInteractiveSelection: false,
             keyboardType: TextInputType.text,
             inputFormatters: [
@@ -698,13 +651,13 @@ class _EmailConfirmInput extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ParentPersonalInfoBloc, ParentPersonalInfoState>(
         buildWhen: (previous, current) =>
-        previous.emailConfirm != current.emailConfirm,
+            previous.emailConfirm != current.emailConfirm,
         builder: (context, state) {
           return TextField(
             enableInteractiveSelection: false,
             controller: controller,
             key:
-            const Key('ParentPersonalInfoForm_EmailConfirmInput_textField'),
+                const Key('ParentPersonalInfoForm_EmailConfirmInput_textField'),
             onChanged: (emailConfirm) => context
                 .read<ParentPersonalInfoBloc>()
                 .add(ParentEmailConfirmChanged(emailConfirm)),
@@ -734,101 +687,12 @@ class _EmailConfirmInput extends StatelessWidget {
   }
 }
 
-// class _PhoneNumberInput extends StatelessWidget {
-//   final TextEditingController controller;
-//
-//   const _PhoneNumberInput({required this.controller});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return BlocBuilder<ParentPersonalInfoBloc, ParentPersonalInfoState>(
-//         buildWhen: (previous, current) =>
-//             previous.phoneNumber != current.phoneNumber,
-//         builder: (context, state) {
-//           return TextField(
-//             enableInteractiveSelection: false,
-//             controller: controller,
-//             key: const Key('ParentPersonalInfoForm_PhoneNumberInput_textField'),
-//             onChanged: (phoneNumber) => context
-//                 .read<ParentPersonalInfoBloc>()
-//                 .add(ParentPhoneNumberChanged(phoneNumber)),
-//             decoration: InputDecoration(
-//               label: const FittedBox(
-//                 fit: BoxFit.fitWidth,
-//                 child: Row(
-//                   children: [
-//                     Text(
-//                       'Handynummer',
-//                       style: TextStyle(fontSize: 14),
-//                     ),
-//                     Padding(
-//                       padding: EdgeInsets.all(3.0),
-//                     ),
-//                     Text('*',
-//                         style: TextStyle(color: Colors.red, fontSize: 14)),
-//                   ],
-//                 ),
-//               ),
-//               errorText: state.phoneNumber.displayError != null
-//                   ? state.phoneNumber.error?.message
-//                   : null,
-//             ),
-//           );
-//         });
-//   }
-// }
-//
-// class _PhoneNumberConfirmInput extends StatelessWidget {
-//   final TextEditingController controller;
-//
-//   const _PhoneNumberConfirmInput({required this.controller});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return BlocBuilder<ParentPersonalInfoBloc, ParentPersonalInfoState>(
-//         buildWhen: (previous, current) =>
-//             previous.phoneNumberConfirm != current.phoneNumberConfirm,
-//         builder: (context, state) {
-//           return TextField(
-//             enableInteractiveSelection: false,
-//             controller: controller,
-//             key: const Key(
-//                 'ParentPersonalInfoForm_PhoneNumberConfirmInput_textField'),
-//             onChanged: (phoneNumberConfirm) => context
-//                 .read<ParentPersonalInfoBloc>()
-//                 .add(ParentPhoneNumberConfirmChanged(phoneNumberConfirm)),
-//             decoration: InputDecoration(
-//               label: const FittedBox(
-//                 fit: BoxFit.fitWidth,
-//                 child: Row(
-//                   children: [
-//                     Text(
-//                       'Wiederhole bitte deine Handynummer',
-//                       style: TextStyle(fontSize: 14),
-//                     ),
-//                     Padding(
-//                       padding: EdgeInsets.all(3.0),
-//                     ),
-//                     Text('*',
-//                         style: TextStyle(color: Colors.red, fontSize: 14)),
-//                   ],
-//                 ),
-//               ),
-//               errorText: state.phoneNumberConfirm.displayError != null
-//                   ? state.phoneNumberConfirm.error?.message
-//                   : null,
-//             ),
-//           );
-//         });
-//   }
-// }
-
 class _PhoneNumberInputFlag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ParentPersonalInfoBloc, ParentPersonalInfoState>(
         buildWhen: (previous, current) =>
-        previous.phoneNumber != current.phoneNumber,
+            previous.phoneNumber != current.phoneNumber,
         builder: (context, state) {
           return InternationalPhoneNumberInput(
             inputDecoration: InputDecoration(
@@ -888,7 +752,9 @@ class _PhoneNumberInputFlag extends StatelessWidget {
                 signed: true, decimal: true),
             onSaved: (PhoneNumber number) {},
             locale: 'de',
-            countries: const ['DE' /*, 'AT', 'CH'*/],
+            countries: const [
+              'DE' /*, 'AT', 'CH'*/
+            ],
             errorMessage: state.phoneNumber.displayError != null
                 ? state.phoneNumber.error?.message
                 : null,
@@ -902,7 +768,7 @@ class _PhoneNumberConfirmInputFlag extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ParentPersonalInfoBloc, ParentPersonalInfoState>(
         buildWhen: (previous, current) =>
-        previous.phoneNumberConfirm != current.phoneNumberConfirm,
+            previous.phoneNumberConfirm != current.phoneNumberConfirm,
         builder: (context, state) {
           return InternationalPhoneNumberInput(
             inputDecoration: InputDecoration(
@@ -961,7 +827,9 @@ class _PhoneNumberConfirmInputFlag extends StatelessWidget {
                 signed: true, decimal: true),
             onSaved: (PhoneNumber number) {},
             locale: 'de',
-            countries: const ['DE' /*, 'AT', 'CH'*/],
+            countries: const [
+              'DE' /*, 'AT', 'CH'*/
+            ],
             errorMessage: state.phoneNumberConfirm.displayError != null
                 ? state.phoneNumberConfirm.error?.message
                 : null,
@@ -970,12 +838,55 @@ class _PhoneNumberConfirmInputFlag extends StatelessWidget {
   }
 }
 
+class _IsWhatsappNumberSwitch extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<ParentPersonalInfoBloc, ParentPersonalInfoState>(
+      buildWhen: (previous, current) =>
+          previous.isWhatsappNumber != current.isWhatsappNumber,
+      builder: (context, state) {
+        return Column(
+          children: [
+            const SizedBox(
+              height: 12.0,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                const Text(
+                  'Ist Das ein Whatsapp Handynummer',
+                  // style: TextStyle(fontSize: 18.0),
+                ),
+                const Spacer(),
+                Switch(
+                  // thumb color (round icon)
+                  // activeColor: Colors.amber,
+                  // activeTrackColor: Colors.cyan,
+                  // inactiveThumbColor: Colors.blueGrey.shade600,
+                  // inactiveTrackColor: Colors.grey.shade400,
+                  splashRadius: 50.0,
+                  // boolean variable value
+                  value: state.isWhatsappNumber,
+                  // changes the state of the switch
+                  onChanged: (value) =>
+                      BlocProvider.of<ParentPersonalInfoBloc>(context)
+                          .add(IsWhatsappNumberChanged()),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
 class _SubmitButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<ParentPersonalInfoBloc, ParentPersonalInfoState>(
       listenWhen: (previous, current) =>
-      previous.submissionStatus != current.submissionStatus,
+          previous.submissionStatus != current.submissionStatus,
       listener: (context, state) {
         if (state.submissionStatus.isSuccess) {
           context.read<SwimGeneratorCubit>().stepContinued();
@@ -991,39 +902,41 @@ class _SubmitButton extends StatelessWidget {
             emailConfirm: state.emailConfirm.value.trim(),
             phoneNumber: state.phoneNumber.value.trim(),
             phoneNumberConfirm: state.phoneNumberConfirm.value.trim(),
+            whatsappNumber:
+                state.isWhatsappNumber ? state.phoneNumber.value.trim() : '',
           );
           context.read<SwimGeneratorCubit>().updatePersonalInfo(personalInfo);
         }
       },
       buildWhen: (previous, current) =>
-      previous.submissionStatus != current.submissionStatus,
+          previous.submissionStatus != current.submissionStatus,
       builder: (context, state) {
         final isValid =
-        context.select((ParentPersonalInfoBloc bloc) => bloc.state.isValid);
+            context.select((ParentPersonalInfoBloc bloc) => bloc.state.isValid);
         return state.submissionStatus.isInProgress
             ? const SpinKitWaveSpinner(
-          color: Colors.lightBlueAccent,
-          size: 50.0,
-        )
+                color: Colors.lightBlueAccent,
+                size: 50.0,
+              )
             : ElevatedButton(
-          key: const Key(
-              'ParentPersonalInfoForm_submitButton_elevatedButton'),
-          style: ElevatedButton.styleFrom(
-              elevation: 0, backgroundColor: Colors.lightBlueAccent),
-          onPressed: isValid
-              ? () => context
-              .read<ParentPersonalInfoBloc>()
-              .add(FormSubmitted())
-              : null,
-          child: const Text(
-            'Weiter',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        );
+                key: const Key(
+                    'ParentPersonalInfoForm_submitButton_elevatedButton'),
+                style: ElevatedButton.styleFrom(
+                    elevation: 0, backgroundColor: Colors.lightBlueAccent),
+                onPressed: isValid
+                    ? () => context
+                        .read<ParentPersonalInfoBloc>()
+                        .add(FormSubmitted())
+                    : null,
+                child: const Text(
+                  'Weiter',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              );
       },
     );
   }
@@ -1033,18 +946,19 @@ class _BackButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ParentPersonalInfoBloc, ParentPersonalInfoState>(
-        buildWhen: (previous, current) =>
-        previous.submissionStatus != current.submissionStatus,
-        builder: (context, state) {
-          return state.submissionStatus.isInProgress
-              ? const SizedBox.shrink()
-              : TextButton(
-            key: const Key(
-                'ParentPersonalInfoForm_cancelButton_elevatedButton'),
-            onPressed: () =>
-                context.read<SwimGeneratorCubit>().stepCancelled(),
-            child: const Text('Zurück'),
-          );
-        });
+      buildWhen: (previous, current) =>
+          previous.submissionStatus != current.submissionStatus,
+      builder: (context, state) {
+        return state.submissionStatus.isInProgress
+            ? const SizedBox.shrink()
+            : TextButton(
+                key: const Key(
+                    'ParentPersonalInfoForm_cancelButton_elevatedButton'),
+                onPressed: () =>
+                    context.read<SwimGeneratorCubit>().stepCancelled(),
+                child: const Text('Zurück'),
+              );
+      },
+    );
   }
 }

@@ -133,81 +133,6 @@ class _BirthDayForm extends State<BirthDayForm> {
   }
 }
 
-// class _BirthDataInput extends StatelessWidget {
-//   final TextEditingController controller;
-//
-//   const _BirthDataInput({
-//     required this.controller,
-//   });
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return BlocBuilder<BirthDayBloc, BirthDayState>(
-//       buildWhen: (previous, current) => previous.birthDay != current.birthDay,
-//       builder: (context, state) {
-//         return TextFormField(
-//           key: const Key('personalInfoForm_birthDayInput_textField'),
-//           // onChanged: (birthday) => context
-//           //     .read<BirthDayBloc>()
-//           //     .add(BirthDayChanged(birthday)),
-//           controller: controller,
-//           readOnly: true,
-//           onTap: () async {
-//             var datePicked = await DatePicker.showSimpleDatePicker(context,
-//                 lastDate: DateTime.now(),
-//                 initialDate: context
-//                     .read<SwimGeneratorCubit>()
-//                     .state
-//                     .birthDay
-//                     .birthDay ??
-//                     DateTime(2020),
-//                 dateFormat: "dd.MMMM.yyyy",
-//                 locale: DateTimePickerLocale.de,
-//                 looping: false,
-//                 pickerMode: DateTimePickerMode.date,
-//                 //backgroundColor: Colors.lightBlueAccent,
-//                 titleText: "Datum auswählen",
-//                 itemTextStyle: const TextStyle(
-//                   fontSize: 18,
-//                   color: Colors.black,
-//                 ),
-//                 backgroundColor: Theme.of(context).colorScheme.background);
-//             controller.text = DateFormat('dd.MM.yyyy').format(datePicked!);
-//             if (context.mounted) {
-//               context.read<BirthDayBloc>().add(BirthDayChanged(datePicked));
-//             }
-//             //Navigator.push(
-//             //    context, MaterialPageRoute(builder: (_) => WidgetPage()));
-//           },
-//           keyboardType: TextInputType.datetime,
-//           decoration: InputDecoration(
-//             label: const FittedBox(
-//               fit: BoxFit.fitWidth,
-//               child: Row(
-//                 children: [
-//                   Text(
-//                     'Geburtstag des Kindes',
-//                     style: TextStyle(fontSize: 14),
-//                   ),
-//                   Padding(
-//                     padding: EdgeInsets.all(3.0),
-//                   ),
-//                   Text(
-//                     '*',
-//                     style: TextStyle(color: Colors.red, fontSize: 14),
-//                   ),
-//                 ],
-//               ),
-//             ),
-//             errorText:
-//             state.birthDay.isValid ? state.birthDay.error?.message : null,
-//           ),
-//         );
-//       },
-//     );
-//   }
-// }
-
 class BirthDataInputNew extends StatelessWidget {
   final TextEditingController controller;
 
@@ -304,6 +229,7 @@ class BirthDataInputNewTip extends StatelessWidget {
                   _DateInputFormatter(),
                 ],
                 decoration: InputDecoration(
+                  hintText: 'TT.MM.YYYY',
                   label: const FittedBox(
                     fit: BoxFit.fitWidth,
                     child: Row(
@@ -425,10 +351,19 @@ class _SubmitButton extends StatelessWidget {
           //---------------//
 
           SwimCourseInfo swimCourseInfo = SwimCourseInfo(
-              season: '',
               swimCourse: BlocProvider.of<BirthDayBloc>(context)
                   .state
-                  .autoSelectedCourse);
+                  .autoSelectedCourse,
+              isForMultiChild: context
+                  .read<SwimGeneratorCubit>()
+                  .state
+                  .swimCourseInfo
+                  .isForMultiChild,
+              childLength: context
+                  .read<SwimGeneratorCubit>()
+                  .state
+                  .swimCourseInfo
+                  .childLength);
           context
               .read<SwimGeneratorCubit>()
               .updateSwimCourseInfo(swimCourseInfo);

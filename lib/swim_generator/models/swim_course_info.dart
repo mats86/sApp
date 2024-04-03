@@ -4,28 +4,35 @@ import '../pages/swim_course/models/swim_course.dart';
 
 class SwimCourseInfo extends Equatable {
   const SwimCourseInfo({
-    required this.season,
     required this.swimCourse,
+    required this.isForMultiChild,
+    required this.childLength,
   });
 
-  final String season;
   final SwimCourse swimCourse;
+  final bool isForMultiChild;
+  final int childLength;
 
   const SwimCourseInfo.empty()
-      : this(season: '', swimCourse: const SwimCourse.empty());
+      : this(
+            swimCourse: const SwimCourse.empty(),
+            isForMultiChild: false,
+            childLength: 1);
 
   SwimCourseInfo copyWith({
-    String? season,
     SwimCourse? swimCourse,
+    bool? isForMultiChild,
+    int? childLength,
   }) {
     return SwimCourseInfo(
-      season: season ?? this.season,
       swimCourse: swimCourse ?? this.swimCourse,
+      isForMultiChild: isForMultiChild ?? this.isForMultiChild,
+      childLength: childLength ?? this.childLength,
     );
   }
 
   bool get isEmpty {
-    return swimCourse.isEmpty;
+    return swimCourse.isEmpty && isForMultiChild == false;
   }
 
   bool get isNotEmpty {
@@ -33,5 +40,5 @@ class SwimCourseInfo extends Equatable {
   }
 
   @override
-  List<Object?> get props => [season, swimCourse];
+  List<Object?> get props => [swimCourse, isForMultiChild];
 }

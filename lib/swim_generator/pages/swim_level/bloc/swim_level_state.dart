@@ -2,38 +2,34 @@ part of 'swim_level_bloc.dart';
 
 class SwimLevelState extends Equatable {
   const SwimLevelState({
-    this.isDirectLinks = false,
     this.swimLevelModel = const SwimLevelModel.pure(),
     this.swimLevelOptions = const [],
     this.swimLevelRB = const SwimLevelRBModel.pure(),
-    this.selectedSeimLevelRB = const SwimLevelRadioButton.empty(),
+    this.selectedSwimLevelRB = const SwimLevelRadioButton.empty(),
     this.isValid = false,
     this.submissionStatus = FormzSubmissionStatus.initial,
   });
 
-  final bool isDirectLinks;
   final SwimLevelModel swimLevelModel;
   final List<SwimLevelRadioButton> swimLevelOptions;
   final SwimLevelRBModel swimLevelRB;
-  final SwimLevelRadioButton selectedSeimLevelRB;
+  final SwimLevelRadioButton selectedSwimLevelRB;
   final bool isValid;
   final FormzSubmissionStatus submissionStatus;
 
   SwimLevelState copyWith({
-    bool? isDirectLinks,
     SwimLevelModel? swimLevelModel,
     List<SwimLevelRadioButton>? swimLevelOptions,
     SwimLevelRBModel? swimLevelRB,
-    SwimLevelRadioButton? selectedSeimLevelRB,
+    SwimLevelRadioButton? selectedSwimLevelRB,
     bool? isValid,
     FormzSubmissionStatus? submissionStatus,
   }) {
     return SwimLevelState(
-      isDirectLinks: isDirectLinks ?? this.isDirectLinks,
       swimLevelModel: swimLevelModel ?? this.swimLevelModel,
       swimLevelOptions: swimLevelOptions ?? this.swimLevelOptions,
       swimLevelRB: swimLevelRB ?? this.swimLevelRB,
-      selectedSeimLevelRB: selectedSeimLevelRB ?? this.selectedSeimLevelRB,
+      selectedSwimLevelRB: selectedSwimLevelRB ?? this.selectedSwimLevelRB,
       isValid: isValid ?? this.isValid,
       submissionStatus: submissionStatus ?? this.submissionStatus,
     );
@@ -41,11 +37,10 @@ class SwimLevelState extends Equatable {
 
   @override
   List<Object> get props => [
-    isDirectLinks,
     swimLevelModel,
     swimLevelOptions,
     swimLevelRB,
-    selectedSeimLevelRB,
+    selectedSwimLevelRB,
     submissionStatus,
   ];
 }

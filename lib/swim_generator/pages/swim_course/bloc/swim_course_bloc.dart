@@ -24,6 +24,9 @@ class SwimCourseBloc extends Bloc<SwimCourseEvent, SwimCourseState> {
     on<SwimCourseChanged>(_onSwimCourseChanged);
     on<LoadSwimSeasonOptions>(_onLoadSwimSeasonOptions);
     on<LoadSwimCourseOptions>(_onLoadSwimCourseOptions);
+    on<DropdownChanged>(_onDropdownChanged);
+    on<ActiveMultiChild>(_onActiveMultiChild);
+    on<UpdateIsForMultiChild>(_onUpdateIsForMultiChild);
     on<WebPageLoading>(_onWebPageLoading);
     on<WebPageLoaded>(_onWebPageLoaded);
     on<FormSubmitted>(_onFormSubmitted);
@@ -49,6 +52,7 @@ class SwimCourseBloc extends Bloc<SwimCourseEvent, SwimCourseState> {
       state.copyWith(
         swimCourse: swimCourse,
         selectedCourse: event.course,
+        dropdownValue: 1,
         isValid: Formz.validate(
           [state.swimSeason, swimCourse],
         ),
@@ -74,10 +78,11 @@ class SwimCourseBloc extends Bloc<SwimCourseEvent, SwimCourseState> {
       LoadSwimCourseOptions event, Emitter<SwimCourseState> emit) async {
     emit(state.copyWith(loadingCourseStatus: FormzSubmissionStatus.inProgress));
     try {
-      final swimCourses = await service.getSwimCoursesByLevelNameAndFutureAge(
-          event.swimLevel.toString().split('.')[1],
-          event.birthDay,
-          event.refDate);
+      final swimCourses =
+          await service.getVisibleSwimCoursesByLevelNameAndFutureAge(
+              event.swimLevel.toString().split('.')[1],
+              event.birthDay,
+              event.refDate);
       emit(state.copyWith(
           swimCourseOptions: swimCourses,
           loadingCourseStatus: FormzSubmissionStatus.success));
@@ -87,6 +92,32 @@ class SwimCourseBloc extends Bloc<SwimCourseEvent, SwimCourseState> {
       }
       emit(state.copyWith(loadingCourseStatus: FormzSubmissionStatus.failure));
     }
+  }
+
+  void _onActiveMultiChild(
+    ActiveMultiChild event,
+    Emitter<SwimCourseState> emit,
+  ) {
+    emit(state.copyWith(
+        isForMultiChild: state.isForMultiChild ? false : true,
+        dropdownValue:
+            state.isForMultiChild == false ? 1 : state.dropdownValue));
+  }
+
+  void _onUpdateIsForMultiChild(
+    UpdateIsForMultiChild event,
+    Emitter<SwimCourseState> emit,
+  ) {
+    emit(state.copyWith(
+      isForMultiChild: event.isForMultiChild,
+    ));
+  }
+
+  void _onDropdownChanged(
+    DropdownChanged event,
+    Emitter<SwimCourseState> emit,
+  ) {
+    emit(state.copyWith(dropdownValue: event.dropdownValue));
   }
 
   // Event-Handler für LoadingWebPage

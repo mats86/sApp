@@ -30,6 +30,8 @@ class ParentPersonalInfoBloc
     on<ParentEmailConfirmChanged>(_onParentEmailConfirmChanged);
     on<ParentPhoneNumberChanged>(_onParentPhoneNumberChanged);
     on<ParentPhoneNumberConfirmChanged>(_onParentPhoneNumberConfirmChanged);
+    on<IsWhatsappNumberChanged>(_onIsWhatsappNumberChanged);
+    on<UpdateIsWhatsappNumber>(_onUpdateIsWhatsappNumber);
     on<IsEmailExists>(_onIsEmailExists);
     on<FormSubmitted>(_onFormSubmitted);
   }
@@ -317,10 +319,25 @@ class ParentPersonalInfoBloc
     );
   }
 
+  void _onIsWhatsappNumberChanged(
+    IsWhatsappNumberChanged event,
+    Emitter<ParentPersonalInfoState> emit,
+  ) {
+    emit(state.copyWith(
+        isWhatsappNumber: state.isWhatsappNumber ? false : true));
+  }
+
+  void _onUpdateIsWhatsappNumber(
+    UpdateIsWhatsappNumber event,
+    Emitter<ParentPersonalInfoState> emit,
+  ) {
+    emit(state.copyWith(isWhatsappNumber: event.isWhatsappNumber));
+  }
+
   void _onIsEmailExists(
-      IsEmailExists event,
-      Emitter<ParentPersonalInfoState> emit,
-      ) {
+    IsEmailExists event,
+    Emitter<ParentPersonalInfoState> emit,
+  ) {
     if (event.isEmailExists) {
       emit(state.copyWith(
           isEmailExists: event.isEmailExists,
@@ -379,7 +396,7 @@ class ParentPersonalInfoBloc
     );
     if (state.isValid) {
       emit(state.copyWith(submissionStatus: FormzSubmissionStatus.inProgress));
-      if (await service.checkEmail(state.email.value)) {
+      if (false /*await service.checkEmail(state.email.value)*/) {
         emit(state.copyWith(submissionStatus: FormzSubmissionStatus.failure));
       } else {
         emit(state.copyWith(submissionStatus: FormzSubmissionStatus.success));

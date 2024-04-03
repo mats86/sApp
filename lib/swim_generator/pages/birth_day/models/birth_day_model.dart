@@ -21,13 +21,12 @@ class BirthDayModel extends FormzInput<DateTime?, BirthdayValidationError> {
     if (value == null) {
       return BirthdayValidationError.required;
     } else {
-      // Validierung gegen das europäische Datumsformat dd.MM.yyyy
       String dateString = DateFormat('dd.MM.yyyy').format(value);
       if (!_birthdayRegex.hasMatch(dateString)) {
         return BirthdayValidationError.invalid;
       }
-      // Hier könnten Sie weitere Validierungen hinzufügen, z.B. Prüfung auf zukünftige Daten etc.
       return null;
     }
   }
+
 }

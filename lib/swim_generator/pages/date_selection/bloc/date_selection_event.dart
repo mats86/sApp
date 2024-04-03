@@ -20,6 +20,7 @@ class LoadFixDates extends DateSelectionEvent {
 class FixDateChanged extends DateSelectionEvent {
   final int fixDateName;
   final FixDate fixDate;
+
   const FixDateChanged(this.fixDateName, this.fixDate);
 
   @override
@@ -28,6 +29,7 @@ class FixDateChanged extends DateSelectionEvent {
 
 class UpdateHasFixedDesiredDate extends DateSelectionEvent {
   final bool hasFixedDesiredDate;
+
   const UpdateHasFixedDesiredDate(this.hasFixedDesiredDate);
 
   @override
@@ -42,25 +44,33 @@ class SelectFixDate extends DateSelectionEvent {
   const SelectFixDate({this.bookingDateTypID});
 }
 
-class UpdateDateTime1 extends DateSelectionEvent {
-  final DateTime? date;
-  final TimeOfDay? time;
+class UpdateSelectedDates extends DateSelectionEvent {
+  final List<DateTime> selectedDates;
 
-  const UpdateDateTime1({this.date, this.time});
+  const UpdateSelectedDates(
+      {required this.selectedDates});
+
+  @override
+  List<Object> get props => [selectedDates];
 }
 
-class UpdateDateTime2 extends DateSelectionEvent {
-  final DateTime? date;
-  final TimeOfDay? time;
+class UpdateSelectedTimes extends DateSelectionEvent {
+  final TimeOfDay selectedTime;
+  final int index;
 
-  const UpdateDateTime2({this.date, this.time});
+  const UpdateSelectedTimes(
+      {required this.index, required this.selectedTime,});
+  @override
+  List<Object> get props => [index, selectedTime];
 }
 
-class UpdateDateTime3 extends DateSelectionEvent {
-  final DateTime? date;
-  final TimeOfDay? time;
+class UpdateSelectedDateTimeLength extends DateSelectionEvent {
+  final int selectedDateTimeLength;
 
-  const UpdateDateTime3({this.date, this.time});
+  const UpdateSelectedDateTimeLength({required this.selectedDateTimeLength});
+
+  @override
+  List<Object> get props => [selectedDateTimeLength];
 }
-
+class UpdateIsValid extends DateSelectionEvent {}
 class FormSubmitted extends DateSelectionEvent {}

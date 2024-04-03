@@ -4,6 +4,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:im_stepper/stepper.dart';
 import 'package:swim_generator_app/swim_generator/models/school_info.dart';
 import 'package:swim_generator_app/swim_generator/pages/date_selection/view/date_selection_page.dart';
+import 'package:swim_generator_app/swim_generator/pages/swim_school/view/swim_school_page.dart';
 import 'package:swim_generator_app/swim_generator/pages/swim_season/view/swim_season_page.dart';
 import 'package:swim_generator_app/swim_generator/view/swim_generator_form_shell.dart';
 
@@ -12,9 +13,11 @@ import '../pages/pages.dart';
 
 class SwimGeneratorStepper extends StatelessWidget {
   final GraphQLClient graphQLClient;
-  final List<int> order;
+  final List<StepPage> order;
   final int swimCourseID;
   final bool isDirectLinks;
+  final bool isCodeLinks;
+  final String code;
   final SchoolInfo schoolInfo;
 
   const SwimGeneratorStepper({
@@ -23,6 +26,8 @@ class SwimGeneratorStepper extends StatelessWidget {
     required this.order,
     required this.swimCourseID,
     required this.isDirectLinks,
+    required this.isCodeLinks,
+    required this.code,
     required this.schoolInfo,
   });
 
@@ -31,11 +36,21 @@ class SwimGeneratorStepper extends StatelessWidget {
     context.read<SwimGeneratorCubit>().updateStepPages(order);
     context.read<SwimGeneratorCubit>().updateStepperLength(order.length);
     context.read<SwimGeneratorCubit>().updateNumberStepper(order.length);
+    context
+        .read<SwimGeneratorCubit>()
+        .updateConfigApp(isDirectLinks: isDirectLinks, isCodeLinks: isCodeLinks, code: code);
     return BlocBuilder<SwimGeneratorCubit, SwimGeneratorState>(
       builder: (context, state) {
         context.read<SwimGeneratorCubit>().updateStepPages(state.stepPages);
-        context.read<SwimGeneratorCubit>().updateStepperLength(state.stepPages.length);
-        context.read<SwimGeneratorCubit>().updateNumberStepper(state.stepPages.length);
+        context
+            .read<SwimGeneratorCubit>()
+            .updateStepperLength(state.stepPages.length);
+        context
+            .read<SwimGeneratorCubit>()
+            .updateNumberStepper(state.stepPages.length);
+        if (isCodeLinks) {
+          context.read<SwimGeneratorCubit>().updateAddStepPages(1);
+        }
         return SwimGeneratorFormShell(
           child: Column(
             children: [
@@ -54,14 +69,14 @@ class SwimGeneratorStepper extends StatelessWidget {
                 state.stepPages.isEmpty ? order : state.stepPages,
                 context.read<SwimGeneratorCubit>().state.configApp.isBooking,
                 state.swimCourseInfo.swimCourse.isAdultCourse,
+                state.swimCourseInfo.isForMultiChild,
+                state.childInfoIndex,
               ),
               body(
                 state.activeStepperIndex,
                 state.stepPages.isEmpty ? order : state.stepPages,
                 swimCourseID,
-                isDirectLinks,
                 state.swimCourseInfo.swimCourse.isAdultCourse,
-                schoolInfo,
               ),
             ],
           ),
@@ -73,9 +88,11 @@ class SwimGeneratorStepper extends StatelessWidget {
   /// Returns the header wrapping the header text.
   Widget header(
     int activeStepperIndex,
-    List<int> stepPages,
+    List<StepPage> stepPages,
     bool isBooking,
     bool isAdultCourse,
+    bool isGroupCourse,
+    int childInfoIndex,
   ) {
     return Container(
       decoration: BoxDecoration(
@@ -88,9 +105,10 @@ class SwimGeneratorStepper extends StatelessWidget {
           headerText(
             activeStepperIndex,
             stepPages,
-            isDirectLinks,
             isBooking,
             isAdultCourse,
+            isGroupCourse,
+            childInfoIndex,
           ),
           style: const TextStyle(
             // color: Colors.black,
@@ -104,51 +122,59 @@ class SwimGeneratorStepper extends StatelessWidget {
   // Returns the header text based on the activeStep.
   String headerText(
     int activeStepperIndex,
-    List<int> stepPages,
-    bool isDirectLinks,
+    List<StepPage> stepPages,
     bool isBooking,
     bool isAdultCourse,
+    bool isGroupCourse,
+    int childInfoIndex,
   ) {
-    int pageIndex = stepPages[activeStepperIndex];
+    StepPage page = stepPages[activeStepperIndex];
 
-    switch (pageIndex) {
-      case 0:
-        if (isDirectLinks) {
-          return 'TERMIN-WAHL';
-        } else {
-          return 'Schwimmniveau';
-        }
+    switch (page) {
+      case StepPage.swimSchool:
+        return 'Schwimmschule';
 
-      case 1:
+      case StepPage.swimLevel:
+        return 'Schwimmniveau';
+
+      case StepPage.swimSeason:
         return 'TERMIN-WAHL';
 
-      case 2:
+      case StepPage.birthDay:
         return 'Geburtsdatum';
 
-      case 3:
+      case StepPage.swimCourse:
         return 'Schwimmkurs';
 
-      case 4:
+      case StepPage.swimPool:
         return 'Schwimmbad';
 
-      case 5:
+      case StepPage.dateSelection:
         if (isBooking) {
           return 'TERMINWAHL';
         } else {
           return 'Hinweis Verein';
         }
 
-      case 6:
-        return 'DATEN zum SCHWIMSCHÜLER:IN';
+      case StepPage.kindPersonalInfo:
+        if (isAdultCourse) {
+          return 'DATEN zum FREUND';
+        } else {
+          if (isGroupCourse) {
+            return 'DATEN zum ${childInfoIndex + 1}. SCHWIMSCHÜLER:IN';
+          } else {
+            return 'DATEN zum SCHWIMSCHÜLER:IN';
+          }
+        }
 
-      case 7:
+      case StepPage.personalInfo:
         if (isAdultCourse) {
           return 'Deine erfassten Daten';
         } else {
           return 'Erziehungsberechtigten Information';
         }
 
-      case 8:
+      case StepPage.result:
         return 'Deine erfassten Daten';
 
       default:
@@ -159,62 +185,66 @@ class SwimGeneratorStepper extends StatelessWidget {
   /// Returns the body.
   Widget body(
     int activeStepperIndex,
-    List<int> stepPages,
+    List<StepPage> stepPages,
     int swimCourseID,
-    bool isDirectLinks,
     bool isAdultCourse,
-    SchoolInfo schoolInfo,
   ) {
-    int pageIndex = stepPages[activeStepperIndex];
+    StepPage page = stepPages[activeStepperIndex];
 
-    switch (pageIndex) {
-      case 0:
-        return SwimLevelPage(
-          isDirectLinks: isDirectLinks,
-          schoolInfo: schoolInfo,
+    switch (page) {
+      case StepPage.swimSchool:
+        return SwimSchoolPage(graphQLClient: graphQLClient);
+
+      case StepPage.swimLevel:
+        return const SwimLevelPage(
         );
 
-      case 1:
+      case StepPage.swimSeason:
         return const SwimSeasonPage();
 
-      case 2:
+      case StepPage.birthDay:
         return BirthDayPage(
           swimCourseID: swimCourseID,
           graphQLClient: graphQLClient,
         );
 
-      case 3:
+      case StepPage.swimCourse:
         return SwimCoursePage(graphQLClient: graphQLClient);
 
-      case 4:
+      case StepPage.swimPool:
         return SwimPoolPage(graphQLClient: graphQLClient);
 
-      case 5:
+      case StepPage.dateSelection:
         return DateSelectionPage(graphQLClient: graphQLClient);
 
-      case 6:
-        if (isAdultCourse) {
-          return ParentPersonalInfoPage(
-            graphQLClient: graphQLClient,
-          );
-        } else {
-          return const KindPersonalInfoPage();
-        }
+      case StepPage.kindPersonalInfo:
+        return KindPersonalInfoPage(
+            key: UniqueKey(),
+            graphQLClient: graphQLClient);
 
-      case 7:
-        if (isAdultCourse) {
-          return ResultPage(graphQLClient: graphQLClient);
-        } else {
-          return ParentPersonalInfoPage(
-            graphQLClient: graphQLClient,
-          );
-        }
+      case StepPage.personalInfo:
+        return ParentPersonalInfoPage(
+          graphQLClient: graphQLClient,
+        );
 
-      case 8:
+      case StepPage.result:
         return ResultPage(graphQLClient: graphQLClient);
 
       default:
         return Container();
     }
   }
+}
+
+enum StepPage {
+  swimSchool,
+  swimLevel,
+  swimSeason,
+  birthDay,
+  swimCourse,
+  swimPool,
+  dateSelection,
+  personalInfo,
+  kindPersonalInfo,
+  result,
 }

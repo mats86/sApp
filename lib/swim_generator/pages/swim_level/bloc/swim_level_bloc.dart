@@ -10,19 +10,11 @@ part 'swim_level_state.dart';
 
 class SwimLevelBloc extends Bloc<SwimLevelEvent, SwimLevelState> {
   SwimLevelBloc() : super(const SwimLevelState()) {
-    on<IsDirectLinks>(_onIsDirectLinks);
     on<SwimLevelChanged>(_onSwimLevelChanged);
     on<LoadSwimLevelOptions>(_onLoadSwimLevelOptions);
     on<SwimLevelRBChanged>(_onSwimLevelRBChanged);
     on<SwimLevelOptionCheckboxChanged>(_onSwimLevelOptionCheckboxChanged);
     on<FormSubmitted>(_onFormSubmitted);
-  }
-
-  void _onIsDirectLinks(
-      IsDirectLinks event,
-      Emitter<SwimLevelState> emit,
-      ) {
-    emit(state.copyWith(isDirectLinks: event.isDirectLinks));
   }
 
   void _onSwimLevelChanged(
@@ -49,7 +41,7 @@ class SwimLevelBloc extends Bloc<SwimLevelEvent, SwimLevelState> {
     final swimLevel = SwimLevelRBModel.dirty(event.swimLevelName);
     emit(
       state.copyWith(
-          swimLevelRB: swimLevel, selectedSeimLevelRB: event.swimLeveRB),
+          swimLevelRB: swimLevel, selectedSwimLevelRB: event.swimLeveRB),
     );
   }
 
@@ -57,7 +49,6 @@ class SwimLevelBloc extends Bloc<SwimLevelEvent, SwimLevelState> {
       SwimLevelOptionCheckboxChanged event, Emitter<SwimLevelState> emit) {
     var updatedOptions = state.swimLevelOptions.map((option) {
       if (option.name == event.option.name) {
-        // Vergleich basierend auf einem eindeutigen Feld
         return option.copyWith(isChecked: event.isChecked);
       }
       return option;

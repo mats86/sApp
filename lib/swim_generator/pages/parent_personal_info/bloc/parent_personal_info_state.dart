@@ -14,6 +14,7 @@ class ParentPersonalInfoState extends Equatable {
     this.emailConfirm = const EmailConfirmModel.pure(),
     this.phoneNumber = const PhoneNumberModel.pure(),
     this.phoneNumberConfirm = const PhoneNumberConfirmModel.pure(),
+    this.isWhatsappNumber = false,
     this.isEmailExists = false,
     this.isValid = false,
     this.loadingTitleStatus = FormzSubmissionStatus.initial,
@@ -32,6 +33,7 @@ class ParentPersonalInfoState extends Equatable {
   final EmailConfirmModel emailConfirm;
   final PhoneNumberModel phoneNumber;
   final PhoneNumberConfirmModel phoneNumberConfirm;
+  final bool isWhatsappNumber;
   final bool isEmailExists;
   final bool isValid;
   final FormzSubmissionStatus loadingTitleStatus;
@@ -50,6 +52,7 @@ class ParentPersonalInfoState extends Equatable {
         EmailConfirmModel? emailConfirm,
         PhoneNumberModel? phoneNumber,
         PhoneNumberConfirmModel? phoneNumberConfirm,
+        bool? isWhatsappNumber,
         bool? isEmailExists,
         bool? isValid,
         FormzSubmissionStatus? loadingTitleStatus,
@@ -67,6 +70,7 @@ class ParentPersonalInfoState extends Equatable {
         emailConfirm: emailConfirm ?? this.emailConfirm,
         phoneNumber: phoneNumber ?? this.phoneNumber,
         phoneNumberConfirm: phoneNumberConfirm ?? this.phoneNumberConfirm,
+        isWhatsappNumber: isWhatsappNumber ?? this.isWhatsappNumber,
         isEmailExists: isEmailExists ?? this.isEmailExists,
         isValid: isValid ?? this.isValid,
         loadingTitleStatus: loadingTitleStatus ?? this.loadingTitleStatus,
@@ -87,6 +91,7 @@ class ParentPersonalInfoState extends Equatable {
     emailConfirm,
     phoneNumber,
     phoneNumberConfirm,
+    isWhatsappNumber,
     isEmailExists,
     loadingTitleStatus,
     submissionStatus,
